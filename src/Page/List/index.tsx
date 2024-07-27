@@ -1,13 +1,19 @@
-import React, { useState } from 'react';
-import { Container, Content, Button } from './styles';
+import React, { useState, useMemo } from 'react';
+import { Container, Content, Button, Filters } from './styles';
 import SelectInput from '../../components/SelectInput';
 import ContentHeader from '../../components/ContentHeader';
 import HistoryFinanceCard from '../../components/HistoryFinanceCard';
+import { useParams } from 'react-router-dom';
 
-const options = [
-  { value: 'William', label: 'William' },
-  { value: 'Ana', label: 'Ana' },
-  { value: 'Miguel', label: 'Miguel' }
+const years = [
+  { value: 7, label: 'Julho' },
+  { value: 8, label: 'Agosto' },
+  { value: 9, label: 'Setembro' }
+];
+const months = [
+  { value: 2023, label: 'Julho' },
+  { value: 2024, label: 'Agosto' },
+  { value: 9, label: 'Setembro' }
 ];
 
 const items = [
@@ -25,18 +31,38 @@ const items = [
   // Adicione mais itens conforme necessário
 ];
 
+interface RouteParams {
+  type: string;
+}
+
 const List: React.FC = () => {
+  const { type } = useParams();
   const [showAll, setShowAll] = useState(false);
+
+  const title = useMemo(() => {
+    return type === "entry-balance" ? "Entradas" : "Saídas";
+  }, [type]);
+  const lineColor = useMemo(() => {
+    return type === "entry-balance" ? "#F7931B" : "#E44C4E";
+  }, [type]);
 
   const itemsToShow = showAll ? items : items.slice(0, 5);
 
   return (
     <div>
       <Container>
-        <ContentHeader title='Saída' lineColor='#96200b'>
-          <SelectInput options={options} />
-          <SelectInput options={options} />
+        <ContentHeader title={title} lineColor={lineColor}>
+          <SelectInput options={months} />
+          <SelectInput options={years} />
         </ContentHeader>
+        <Filters>
+          <button type="button" className='tag-filter tag-filter-recurrent'>
+            Recorrentes
+          </button>
+          <button type="button" className='tag-filter tag-filter-eventual'>
+            Eventuais
+          </button>
+        </Filters>
         <Content>
           <ul>
             {itemsToShow.map((item, index) => (
