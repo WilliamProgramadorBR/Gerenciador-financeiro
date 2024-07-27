@@ -1,12 +1,16 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 
+// Defina o caminho para o ícone PNG
+const iconPath = path.join(__dirname, 'imgelectron', 'image.png'); // Atualize com o caminho correto para o seu ícone PNG
+
 let mainWindow;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
+    icon: iconPath, // Use o caminho do ícone aqui
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -16,7 +20,6 @@ function createWindow() {
 
   if (process.env.NODE_ENV === 'development') {
     mainWindow.loadFile(path.join(__dirname, 'public', 'index.html'));
-    
   } else {
     mainWindow.loadURL('http://localhost:3000');
   }
