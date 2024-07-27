@@ -1,7 +1,11 @@
 import styled from "styled-components";
 
-
+interface ITitleContainerProps{
+  lineColor: string;
+}
 export const Container = styled.div`
+margin-bottom: 25px;
+  margin-left: 80%;
   width: calc(100% - 250px); /* Ajuste conforme necessário para o menu lateral */
   margin-left: -43%; /* Espaço para o menu lateral */
   display: flex;
@@ -25,9 +29,24 @@ export const Container = styled.div`
     top: 70px;
   }
 `;
-export const ButtonStyled = styled.button`
-margin-left: 500%;`
 
-export const Title = styled.div``;
-export const Controllers = styled.div``
+
+export const Title = styled.div<ITitleContainerProps>`
+> h1{
+  color: ${props => props.theme.colors.white};
+
+  &::after{
+    content: '';
+    display: block;
+    width: 55px;
+    border-bottom: 10px solid ${props => props.lineColor};
+  }
+}`;
+export const Controllers = styled.div`
+display: flex;
+margin-left: 5px;
+button {
+  margin: 0% 2px;
+  margin-left: 0%;
+}`
 
