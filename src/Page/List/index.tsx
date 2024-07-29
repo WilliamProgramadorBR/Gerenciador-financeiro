@@ -6,6 +6,8 @@ import HistoryFinanceCard from '../../components/HistoryFinanceCard';
 import { useParams } from 'react-router-dom';
 import gains from '../../repositories/gains';
 import expenses from '../../repositories/expenses';
+import formatCurrency from '../../utils/formatCurrency';
+import formatDate from '../../utils/formatDate';
 const years = [
   { value: 7, label: 'Julho' },
   { value: 8, label: 'Agosto' },
@@ -53,9 +55,9 @@ const List: React.FC = () => {
       return{
        id: String(Math.random()*data.length),
       description:item.description,
-      amountFormatted: item.amount,
+      amountFormatted: formatCurrency (Number(item.amount)),
       frequency: item.frequency,
-      dataFormatted: item.date,
+      dataFormatted: formatDate(item.date),
       tagColor: item.frequency ==='recorrente'? '#4e41f0': '#E44c4e'}
     })
      setData(response)
