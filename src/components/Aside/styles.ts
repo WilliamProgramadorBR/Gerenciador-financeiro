@@ -38,6 +38,7 @@ display: flex;
 align-items: center;
 text-decoration: none;
 transition: opacity .3s;
+margin-top: 50%;
 &:hover{
     opacity: .7;
     svg{
