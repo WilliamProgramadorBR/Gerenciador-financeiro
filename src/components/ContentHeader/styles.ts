@@ -30,34 +30,34 @@ margin-bottom: 25px;
   }
 `;
 
+export const TitleContainer = styled.div<ITitleContainerProps>`
+       margin-left: 10px;
+       margin-top: -2%;
+    > h1 {
+        color: ${props => props.theme.colors.white};
 
-export const Title = styled.div<ITitleContainerProps>`
- > h1 {
-    color: ${props => props.theme.colors.white};
-    grid-area: TL;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-left: 220%;
-
-    &::after {
-      content: '';
-      display: block;
-      width: 55px;
-      border-bottom: 10px solid ${props => props.lineColor};
-      margin-top: 5px;
+        &::after {
+            content: '';
+            
+            display: block;
+            width: 55px;
+            border-bottom: 10px solid ${props => props.lineColor};
+        }
     }
 
-    @media (max-width: 576px) {
-      font-size: 1.5em;
-      &::after {
-        width: 40px;
-      }
-    }
-  }
+    @media(max-width: 420px){
+        > h1 {
+                font-size: 22px;
 
-  /* Adicione um z-index menor para o título */
-  z-index: 5;
+                &::after {
+                content: '';
+                display: block;
+                width: 55px;
+                
+                border-bottom: 5px solid ${props => props.lineColor};
+            }
+        }
+    }
 `;
 export const Controllers = styled.div`
 display: flex;
