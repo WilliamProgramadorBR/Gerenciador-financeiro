@@ -15,7 +15,7 @@ export default [
   {"description":"Cinema",                "amount":"45.00", "type":"saída","frequency":"eventual",  "date":"2020-02-23"},
   {"description":"Energia elétrica",      "amount":"97.00", "type":"saída","frequency":"recorrente","date":"2020-03-10"},
   {"description":"Água",                  "amount":"100.10","type":"saída","frequency":"recorrente","date":"2020-03-15"},
-  {"description":"Telefone",              "amount":"99.99", "type":"saída","frequency":"recorrente","date":"2020-03-23"},
+  {"description":"Telefone",              "amount":"99.99", "type":"saída","frequency":"recorrente","date":"2021-03-23"},
   {"description":"Plano de Saúde",        "amount":"300.00","type":"saída","frequency":"recorrente","date":"2020-03-23"},
   {"description":"Compras do mês",        "amount":"800.50","type":"saída","frequency":"recorrente","date":"2020-03-17"},
   {"description":"Parcela do Celular 2/5","amount":"150.99","type":"saída","frequency":"eventual",  "date":"2020-03-18"},

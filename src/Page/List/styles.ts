@@ -1,7 +1,8 @@
 import styled from "styled-components";
 
 
-export const Container = styled.div``;
+export const Container = styled.div`
+margin-top:10%;`;
 
 export const Content = styled.div``;
 export const Filters = styled.div`
