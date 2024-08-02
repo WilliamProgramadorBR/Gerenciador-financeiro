@@ -1,5 +1,5 @@
 import React, {ReactNode} from 'react';
-import { Container } from './styles';
+import { Container, StyledSelect,StyledOption } from './styles';
 interface IselectInputProps{
     options:{
         value: string | number;
@@ -13,13 +13,13 @@ const SelectInput: React.FC<IselectInputProps> = ({options, onChange, defaultVal
 
     return(
         <Container>
-         <select onChange={onChange} defaultValue={defaultValue}>
-        {options.map(option =>(
-              <option value={option.value}>{option.label}</option>
-        ))}
-        
-        
-         </select>
+        <StyledSelect onChange={onChange} defaultValue={defaultValue}>
+    {options.map((option) => (
+      <StyledOption key={option.value} value={option.value}>
+        {option.label}
+      </StyledOption>
+    ))}
+  </StyledSelect>
         </Container>
     );
 }
