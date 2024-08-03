@@ -4,64 +4,78 @@ import styled from "styled-components";
 
 export const Container = styled.div`
   grid-area: AS;
-  background-color: ${props => props.theme.colors.secondary};
-  color: ${props => props.theme.colors.white};
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 20px;
-  border-right: 1px solid ${props => props.theme.colors.gray};
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100vh;
-  width: 250px; /* Ajuste a largura conforme necessário */
+    
+    background-color: ${props => props.theme.colors.secondary};
+    padding-left: 20px;
 
-  @media (max-width: 768px) {
-    padding: 10px;
-    justify-content: space-between;
-    border-right: none;
-    width: 100%;
-    height: auto;
-    position: static;
-  }
+    border-right: 1px solid ${props => props.theme.colors.gray};
 
-  @media (max-width: 480px) {
-    flex-direction: column;
-    padding: 10px 0;
-  }
-`;
-export const MenuItemLink = styled.a`
+    position: relative;
 
-color: ${props => props.theme.colors.info};
-display: flex;
-align-items: center;
-text-decoration: none;
-transition: opacity .3s;
-margin-top: 50%;
-&:hover{
-    opacity: .7;
-    svg{
-        font-size: 20px;
+    @media(max-width: 600px){
+        padding-left: 20px;
+        position: fixed;
+        z-index: 2;
+
+        width: 170px;
+
+     
     }
-}`
-export const Header = styled.header`
-display: flex;
-align-items: center;`;
-export const LogoImg = styled.img`
-height: 40px;
-width: 40px;
 `;
-export const Title = styled.h3`color: solid${props => props.theme.colors.white};
-margin-left: 10px;
-`;
-export const MenuContainer = styled.nav`
 
-display: flex;
-flex-direction: column;
-margin: 50px 0px;
-margin-top: 30%;
-margin-left: -50%`;
+export const Header = styled.header`
+    height: 70px;
+    display: flex;
+    align-items: center;
+
+`;
+
+export const LogImg = styled.img`
+    height: 40px;
+    width: 40px;
+
+    @media(max-width: 600px){        
+        display: none;
+    }
+`;
+
+export const Title = styled.h3`
+    color: ${props => props.theme.colors.white};
+    margin-left: 10px;
+
+    @media(max-width: 600px){
+        display: none;
+    }
+`;
+
+
+export const MenuContainer = styled.nav`
+    display: flex;
+    flex-direction: column;
+
+
+    margin-top: 50px;
+`;
+
+export const MenuItemLink = styled.a`
+    color: ${props => props.theme.colors.info};
+    text-decoration: none;
+
+    margin: 7px 0;
+    display: flex;
+    align-items: center;
+
+    transition: opacity .3s;
+
+    &:hover {
+        opacity: .7;
+    }
+
+    > svg {
+        font-size: 18px;
+        margin-right: 5px;
+    }
+`;
 
 
 
