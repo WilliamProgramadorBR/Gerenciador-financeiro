@@ -11,6 +11,8 @@ import WalletBox from '../../components/WalletBox';
 import MessageBox from '../../components/MessageBox';
 import happyImg from '../../assets/happy.svg'
 import sadImg from '../../assets/sad.svg'
+import PieChartBox from '../../components/PieChart';
+import HistoryBox from '../../components/HistoryBox';
 import { title } from 'process';
 
 const Dashboard: React.FC = () =>{
@@ -37,11 +39,7 @@ const Dashboard: React.FC = () =>{
           };
         });
       }, []);
-      const options = [
-        {value: 'William', label: 'William'},
-        {value: 'Ana', label: 'Ana'},
-        {value: 'Miguel', label: 'Miguel'}
-    ]
+  
     
       const months = useMemo(() => {
         return listOfMonths.map((month, index) => {
@@ -102,7 +100,7 @@ const Dashboard: React.FC = () =>{
                 footerText:"Verifique seus gatos e tente cortar algumas despesas. É sempre bom, economizar no crédito, para não pagar juros",
                 icon:sadImg
               }
-            }else if(totalBalance == 0){
+            }else if(totalBalance === 0){
               return {
               title: "Ufaa! Essa foi por pouco, ein! Vamos focar no lucro agora ;)",
               description:"Vamos evitar gastos elevados, para manter na progressão. Sempre importante colocar as coisas na ponta do lápis.",
@@ -118,6 +116,30 @@ const Dashboard: React.FC = () =>{
         }
       }
     },[totalBalance])
+
+    const relationExpensesVersusGains = useMemo(() => {
+      const total = totalGains + totalExpenses;
+
+      const percentGains = Number(((totalGains / total) * 100).toFixed(1));
+      const percentExpenses = Number(((totalExpenses / total) * 100).toFixed(1));
+
+      const data = [
+          {
+              name: "Entradas",
+              value: totalGains,
+              percent: percentGains ? percentGains : 0, 
+              color: '#E44C4E'
+          },
+          {
+              name: "Saídas",
+              value: totalExpenses,
+              percent: percentExpenses ? percentExpenses : 0, 
+              color: '#F7931B'
+          },
+      ];
+
+      return data;
+  },[totalGains, totalExpenses]);
  
     const handleMonthSelected = (month: string) => {
         try {
@@ -178,6 +200,7 @@ const Dashboard: React.FC = () =>{
         description={message.description}
         footerText={message.footerText}
         icon={message.icon}/>
+        <PieChartBox data={relationExpensesVersusGains} />
         </Container></div>
     );
 }
