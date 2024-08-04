@@ -18,7 +18,6 @@ import {
     Legend,
 }  from './styles';
 
-
 interface IHistoryBoxProps {
     data: {
         month: string;
@@ -50,8 +49,8 @@ const HistoryBox: React.FC<IHistoryBoxProps> = ({
         </Header>
 
         <ChartContainer>
-            <ResponsiveContainer>
-                <LineChart data={data} margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
+            <ResponsiveContainer width="100%" height={400}>
+                <LineChart data={data} margin={{ top: 20, right: 50, left: 20, bottom: 20 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#cecece" />
                     <XAxis dataKey="month" stroke="#cecece" />
                     <Tooltip formatter={(value) => formatCurrency(Number(value))} />

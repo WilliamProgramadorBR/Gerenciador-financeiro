@@ -1,4 +1,4 @@
-export default[
+export default [
     'Janeiro',
     'Fevereiro',
     'Março',
@@ -7,5 +7,8 @@ export default[
     'Junho',
     'Julho',
     'Agosto',
-    'Setembro','Outubro','Novembro','Dezembro'
-]
+    'Setembro',
+    'Outubro',
+    'Novembro',
+    'Dezembro'
+];

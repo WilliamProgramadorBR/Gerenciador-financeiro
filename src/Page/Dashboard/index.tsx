@@ -1,207 +1,310 @@
-import React,{useState, useMemo} from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 
 
-import { Container,Content } from './styled';
 import ContentHeader from '../../components/ContentHeader';
 import SelectInput from '../../components/SelectInput';
-import expenses from'../../repositories/expenses'
-import gains from '../../repositories/gains';
-import listOfMonths from '../../utils/months';
 import WalletBox from '../../components/WalletBox';
 import MessageBox from '../../components/MessageBox';
-import happyImg from '../../assets/happy.svg'
-import sadImg from '../../assets/sad.svg'
 import PieChartBox from '../../components/PieChart';
 import HistoryBox from '../../components/HistoryBox';
-import { title } from 'process';
+//import BarChartBox from '../../components/BarChartBox'
 
-const Dashboard: React.FC = () =>{
+import expenses from '../../repositories/expenses';
+import gains from '../../repositories/gains';
+import listOfMonths from '../../utils/months';
+
+import happyImg from '../../assets/happy.svg';
+import sadImg from '../../assets/sad.svg';
+import grinningImg from '../../assets/grinning.svg';
+import opsImg from '../../assets/ops.svg';
+
+
+import { 
+    Container,
+    Content, 
+} from './styled';
+
+
+const Dashboard: React.FC = () => {
     const [monthSelected, setMonthSelected] = useState<number>(new Date().getMonth() + 1);
     const [yearSelected, setYearSelected] = useState<number>(new Date().getFullYear());
+
+
     const years = useMemo(() => {
         let uniqueYears: number[] = [];
-    
-      
-    
+
         [...expenses, ...gains].forEach(item => {
-          const date = new Date(item.date);
-          const year = date.getFullYear();
-    
-          if (!uniqueYears.includes(year)) {
-            uniqueYears.push(year);
-          }
+            const date = new Date(item.date);
+            const year = date.getFullYear();
+
+            if(!uniqueYears.includes(year)){
+                uniqueYears.push(year)
+           }
         });
-    
+
         return uniqueYears.map(year => {
-          return {
-            value: year,
-            label: year,
-          };
-        });
-      }, []);
-  
-    
-      const months = useMemo(() => {
-        return listOfMonths.map((month, index) => {
-          return {
-            value: index + 1,
-            label: month,
-          };
-        });
-      }, []);
-
-      const totalExpenses = useMemo(() =>{
-        let total: number =0;
-
-        expenses.forEach(item =>{
-          const date = new Date(item.date);
-          const year = date.getFullYear();
-          const month = date.getMonth() +1;
-          if(month === monthSelected && year === yearSelected){
-           try{
-            total += Number(item.amount)
-           }catch(error){
-            throw new Error('Não é um ano valido')
-           }  // Ligar no back end
-          }
-        })
-        return total;
-      },[monthSelected, yearSelected])
-
-      const totalGains = useMemo(() =>{
-        let total: number =0;
-
-        gains.forEach(item =>{
-          const date = new Date(item.date);
-          const year = date.getFullYear();
-          const month = date.getMonth() +1;
-          if(month === monthSelected && year === yearSelected){
-           try{
-            total += Number(item.amount)
-           }catch(error){
-            throw new Error('Não é um ano valido')
-           }  // Ligar no back end
-          }
-        })
-        return total;
-      },[monthSelected, yearSelected])
-      
-      const totalBalance = useMemo(()=>{
-       
-              return totalGains - totalExpenses;
-          
-      },[totalGains, totalExpenses])
-
-      const message = useMemo(()=>{
-            if(totalBalance < 0){
-              return {
-                title: "Que pena :(",
-                description:"Neste mês, você gastou muito. Até mais do que deveria.",
-                footerText:"Verifique seus gatos e tente cortar algumas despesas. É sempre bom, economizar no crédito, para não pagar juros",
-                icon:sadImg
-              }
-            }else if(totalBalance === 0){
-              return {
-              title: "Ufaa! Essa foi por pouco, ein! Vamos focar no lucro agora ;)",
-              description:"Vamos evitar gastos elevados, para manter na progressão. Sempre importante colocar as coisas na ponta do lápis.",
-              footerText:"Evite lanches caros, também é importante manter o cartão de crédito guardadinho, não se esqueça de pelo menos guardar 5% do que arrecada ao mês.",
-              icon: happyImg
+            return {
+                value: year,
+                label: year,
             }
-      }else{
-        return{
-          title: "Ótimo trabalho! Você está indo muito bem! 🎉",
-          description: "Continue assim, mantendo um controle rigoroso dos seus gastos. Isso é essencial para garantir que você continue a ver os frutos do seu trabalho. Lembre-se, um bom planejamento financeiro é a chave para o sucesso.",
-          footerText: "Tente fazer uma revisão mensal das suas despesas e receitas. Isso ajudará a identificar oportunidades para economizar ainda mais. E não se esqueça de reservar uma parte dos seus ganhos para o futuro!",
-          icon: happyImg
+        });
+    },[]);
+
+
+    const months = useMemo(() => {
+        return listOfMonths.map((month, index) => {
+            return {
+                value: index + 1,
+                label: month,
+            }
+        });
+    },[]);
+    
+    
+    const totalExpenses = useMemo(() => {
+        let total: number = 0;
+
+        expenses.forEach(item => {
+            const date = new Date(item.date);
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+
+            if(month === monthSelected && year === yearSelected){
+                try{
+                    total += Number(item.amount)
+                }catch{
+                    throw new Error('Invalid amount! Amount must be number.')
+                }
+            }
+        });
+
+        return total;
+    },[monthSelected, yearSelected]);
+
+
+    const totalGains = useMemo(() => {
+        let total: number = 0;
+
+        gains.forEach(item => {
+            const date = new Date(item.date);
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+
+            if(month === monthSelected && year === yearSelected){
+                try{
+                    total += Number(item.amount)
+                }catch{
+                    throw new Error('Invalid amount! Amount must be number.')
+                }
+            }
+        });
+
+        return total;
+    },[monthSelected, yearSelected]);
+
+    const totalBalance = useMemo(() => {
+        return totalGains - totalExpenses;
+    },[totalGains, totalExpenses]);
+
+    const message = useMemo(() => {
+        if(totalBalance < 0){
+            return {
+                title: "Que triste!",
+                description: "Neste mês, você gastou mais do que deveria.",
+                footerText: "Verifique seus gastos e tente cortar algumas coisas desnecessárias.",
+                icon: sadImg
+            }
+        }      
+        else if(totalGains === 0 && totalExpenses === 0){
+            return {
+                title: "Op's!",
+                description: "Neste mês, não há registros de entradas ou saídas.",
+                footerText: "Parece que você não fez nenhum registro no mês e ano selecionado.",
+                icon: opsImg
+            }
         }
-      }
-    },[totalBalance])
+        else if(totalBalance === 0){
+            return {
+                title: "Ufaa!",
+                description: "Neste mês, você gastou exatamente o que ganhou.",
+                footerText: "Tenha cuidado. No próximo tente poupar o seu dinheiro.",
+                icon: grinningImg
+            }
+        }
+        else{
+            return {
+                title: "Muito bem!",
+                description: "Sua carteira está positiva!",
+                footerText: "Continue assim. Considere investir o seu saldo.",
+                icon: happyImg
+            }
+        }
+
+    },[totalBalance, totalGains, totalExpenses]);
 
     const relationExpensesVersusGains = useMemo(() => {
-      const total = totalGains + totalExpenses;
+        const total = totalGains + totalExpenses;
 
-      const percentGains = Number(((totalGains / total) * 100).toFixed(1));
-      const percentExpenses = Number(((totalExpenses / total) * 100).toFixed(1));
+        const percentGains = Number(((totalGains / total) * 100).toFixed(1));
+        const percentExpenses = Number(((totalExpenses / total) * 100).toFixed(1));
 
-      const data = [
-          {
-              name: "Entradas",
-              value: totalGains,
-              percent: percentGains ? percentGains : 0, 
-              color: '#E44C4E'
-          },
-          {
-              name: "Saídas",
-              value: totalExpenses,
-              percent: percentExpenses ? percentExpenses : 0, 
-              color: '#F7931B'
-          },
-      ];
+        const data = [
+            {
+                name: "Entradas",
+                value: totalGains,
+                percent: percentGains ? percentGains : 0, 
+                color: '#E44C4E'
+            },
+            {
+                name: "Saídas",
+                value: totalExpenses,
+                percent: percentExpenses ? percentExpenses : 0, 
+                color: '#F7931B'
+            },
+        ];
 
-      return data;
-  },[totalGains, totalExpenses]);
- 
-    const handleMonthSelected = (month: string) => {
-        try {
-          const parseMonth = Number(month);
-          setMonthSelected(parseMonth);
-        } catch {
-          throw new Error('invalid month value. Is accept 0 - 24.');
-        }
-      };
+        return data;
+    },[totalGains, totalExpenses]);
+
+    const historyData = useMemo(() => {
     
-      const handleYearSelected = (year: string) => {
-        try {
-          const parseYear = Number(year);
-          setYearSelected(parseYear);
-        } catch {
-          throw new Error('invalid year value. Is accept integer numbers.');
-        }
-      };
-    return(
-        <div>
-        <Container>
-              <ContentHeader title='Dashboard' lineColor='#F7931B'>
+        return listOfMonths.map((_, month) => {
+            
+            let amountEntry = 0;
+            gains.forEach(gain => {
+                const date = new Date(gain.date);
+                const gainMonth = date.getMonth();
+                const gainYear = date.getFullYear();
+
+                if(gainMonth === month && gainYear === yearSelected){
+                    try{
+                        amountEntry += Number(gain.amount);
+                    }catch{
+                        throw new Error('amountEntry is invalid. amountEntry must be valid number.')
+                    }
+                }
+            });
+
+            let amountOutput = 0;
+            expenses.forEach(expense => {
+                const date = new Date(expense.date);
+                const expenseMonth = date.getMonth();
+                const expenseYear = date.getFullYear();
+
+                if(expenseMonth === month && expenseYear === yearSelected){
+                    try{
+                        amountOutput += Number(expense.amount);
+                    }catch{
+                        throw new Error('amountOutput is invalid. amountOutput must be valid number.')
+                    }
+                }
+            });
+
+
+            return {
+                monthNumber: month,
+                month: listOfMonths[month].substr(0, 3),
+                amountEntry,
+                amountOutput
+            }
+        })
+        .filter(item => {
+          const currentMonth = new Date().getMonth();
+          const currentYear = new Date().getFullYear();
+          return (yearSelected === currentYear && item.monthNumber <= currentMonth) || (yearSelected < currentYear)
+      });
       
-       <SelectInput
-          options={months}
-          onChange={(e) => handleMonthSelected(e.target.value)}
-          defaultValue={monthSelected}
-        />
-        <SelectInput
-          options={years}
-          onChange={(e) => handleYearSelected(e.target.value)}
-          defaultValue={yearSelected}
-        />
-              </ContentHeader>
-              <Content>
-              <WalletBox 
-              title="saldo"
-              amount={totalBalance}
-              footerlabel={"atualizado com base nas entradas e saídas"}
-              icon="dolar"
-              color="#4e41f0"/>
-              </Content>
-              <WalletBox 
-              title="Entradas"
-              amount={totalGains}
-              footerlabel={"atualizado com base nas entradas e saídas"}
-              icon="arrowUp"
-              color="#f7931b"/>
-       
-              <WalletBox 
-              title="Saídas"
-              amount={totalExpenses}
-              footerlabel={"atualizado com base nas entradas e saídas"}
-              icon="arrowDonw"
-              color="#e44c4e"/>
-        <MessageBox
-        title={message.title}
-        description={message.description}
-        footerText={message.footerText}
-        icon={message.icon}/>
-        <PieChartBox data={relationExpensesVersusGains} />
-        </Container></div>
+     
+  }, [yearSelected,]);
+
+    
+
+
+  
+
+    const handleMonthSelected = useCallback((month: string) => {
+        try {
+            const parseMonth = Number(month);
+            setMonthSelected(parseMonth);
+        }
+        catch{
+            throw new Error('invalid month value. Is accept 0 - 24.')
+        }
+    },[]);
+
+
+    const handleYearSelected = useCallback((year: string) => {
+        try {
+            const parseYear = Number(year);
+            setYearSelected(parseYear);
+        }
+        catch{
+            throw new Error('invalid year value. Is accept integer numbers.')
+        }
+    },[]);
+  
+    
+console.log(historyData)
+    return (
+        <Container>
+            <ContentHeader title="Dashboard" lineColor="#F7931B">
+                <SelectInput 
+                    options={months}
+                    onChange={(e) => handleMonthSelected(e.target.value)} 
+                    defaultValue={monthSelected}
+                />
+                <SelectInput 
+                    options={years} 
+                    onChange={(e) => handleYearSelected(e.target.value)} 
+                    defaultValue={yearSelected}
+                />
+            </ContentHeader>
+
+            <Content>
+                <WalletBox 
+                    title="saldo"
+                    color="#4E41F0"
+                    amount={totalBalance}
+                    footerlabel="atualizado com base nas entradas e saídas"
+                    icon="dolar"
+                />
+
+                <WalletBox 
+                    title="entradas"
+                    color="#F7931B"
+                    amount={totalGains}
+                    footerlabel="atualizado com base nas entradas e saídas"
+                    icon="arrowUp"
+                />
+
+                <WalletBox 
+                    title="saídas"
+                    color="#E44C4E"
+                    amount={totalExpenses}
+                    footerlabel="atualizado com base nas entradas e saídas"
+                    icon="arrowDonw"
+                />
+
+                <MessageBox
+                    title={message.title}
+                    description={message.description}
+                    footerText={message.footerText}
+                    icon={message.icon}
+                />
+
+                <PieChartBox data={relationExpensesVersusGains} />
+
+                <HistoryBox 
+                    data={historyData} 
+                    lineColorAmountEntry="#F7931B"
+                    lineColorAmountOutput="#E44C4E"
+                />
+
+              
+               
+                
+            </Content>
+        </Container>
     );
 }
 
