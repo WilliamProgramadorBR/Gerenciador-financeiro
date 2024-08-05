@@ -7,7 +7,7 @@ import WalletBox from '../../components/WalletBox';
 import MessageBox from '../../components/MessageBox';
 import PieChartBox from '../../components/PieChart';
 import HistoryBox from '../../components/HistoryBox';
-//import BarChartBox from '../../components/BarChartBox'
+import BarChartBox from '../../components/BarChatBox'
 
 import expenses from '../../repositories/expenses';
 import gains from '../../repositories/gains';
@@ -217,7 +217,92 @@ const Dashboard: React.FC = () => {
      
   }, [yearSelected,]);
 
-    
+  const relationExpensevesRecurrentVersusEventual = useMemo(() => {
+    let amountRecurrent = 0;
+    let amountEventual = 0;
+
+    expenses
+    .filter((expense) => {
+        const date = new Date(expense.date);
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+
+        return month === monthSelected && year === yearSelected;
+    })
+    .forEach((expense) => {
+        if(expense.frequency === 'recorrente'){
+            return amountRecurrent += Number(expense.amount);
+        }
+
+        if(expense.frequency === 'eventual'){
+            return amountEventual += Number(expense.amount);
+        }
+    });
+
+    const total = amountRecurrent + amountEventual;
+
+    const percentRecurrent = Number(((amountRecurrent / total) * 100).toFixed(1));
+    const percentEventual = Number(((amountEventual / total) * 100).toFixed(1));
+
+    return [
+        {
+            name: 'Recorrentes',
+            amount: amountRecurrent,
+            percent: percentRecurrent ? percentRecurrent : 0, 
+            color: "#F7931B"
+        },
+        {
+            name: 'Eventuais',
+            amount: amountEventual,
+            percent: percentEventual ? percentEventual : 0,
+            color: "#E44C4E"
+        }
+    ];
+},[monthSelected, yearSelected]);
+
+
+const relationGainsRecurrentVersusEventual = useMemo(() => {
+    let amountRecurrent = 0;
+    let amountEventual = 0;
+
+    gains
+    .filter((gain) => {
+        const date = new Date(gain.date);
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+
+        return month === monthSelected && year === yearSelected;
+    })
+    .forEach((gain) => {
+        if(gain.frequency === 'recorrente'){
+            return amountRecurrent += Number(gain.amount);
+        }
+
+        if(gain.frequency === 'eventual'){
+            return amountEventual += Number(gain.amount);
+        }
+    });
+
+    const total = amountRecurrent + amountEventual;
+
+    const percentRecurrent = Number(((amountRecurrent / total) * 100).toFixed(1));
+    const percentEventual = Number(((amountEventual / total) * 100).toFixed(1));
+
+    return [
+        {
+            name: 'Recorrentes',
+            amount: amountRecurrent,
+            percent: percentRecurrent ? percentRecurrent : 0,
+            color: "#F7931B"
+        },
+        {
+            name: 'Eventuais',
+            amount: amountEventual,
+            percent: percentEventual ? percentEventual : 0,
+            color: "#E44C4E"
+        }
+    ];
+},[monthSelected, yearSelected]);
 
 
   
@@ -245,67 +330,74 @@ const Dashboard: React.FC = () => {
   
     
 console.log(historyData)
-    return (
-        <Container>
-            <ContentHeader title="Dashboard" lineColor="#F7931B">
-                <SelectInput 
-                    options={months}
-                    onChange={(e) => handleMonthSelected(e.target.value)} 
-                    defaultValue={monthSelected}
-                />
-                <SelectInput 
-                    options={years} 
-                    onChange={(e) => handleYearSelected(e.target.value)} 
-                    defaultValue={yearSelected}
-                />
-            </ContentHeader>
+return (
+    <Container>
+        <ContentHeader title="Dashboard" lineColor="#F7931B">
+            <SelectInput 
+                options={months}
+                onChange={(e) => handleMonthSelected(e.target.value)} 
+                defaultValue={monthSelected}
+            />
+            <SelectInput 
+                options={years} 
+                onChange={(e) => handleYearSelected(e.target.value)} 
+                defaultValue={yearSelected}
+            />
+        </ContentHeader>
 
-            <Content>
-                <WalletBox 
-                    title="saldo"
-                    color="#4E41F0"
-                    amount={totalBalance}
-                    footerlabel="atualizado com base nas entradas e saídas"
-                    icon="dolar"
-                />
+        <Content>
+            <WalletBox 
+                title="saldo"
+                color="#4E41F0"
+                amount={totalBalance}
+                footerlabel="atualizado com base nas entradas e saídas"
+                icon="dolar"
+            />
 
-                <WalletBox 
-                    title="entradas"
-                    color="#F7931B"
-                    amount={totalGains}
-                    footerlabel="atualizado com base nas entradas e saídas"
-                    icon="arrowUp"
-                />
+            <WalletBox 
+                title="entradas"
+                color="#F7931B"
+                amount={totalGains}
+                footerlabel="atualizado com base nas entradas e saídas"
+                icon="arrowUp"
+            />
 
-                <WalletBox 
-                    title="saídas"
-                    color="#E44C4E"
-                    amount={totalExpenses}
-                    footerlabel="atualizado com base nas entradas e saídas"
-                    icon="arrowDonw"
-                />
+            <WalletBox 
+                title="saídas"
+                color="#E44C4E"
+                amount={totalExpenses}
+                footerlabel="atualizado com base nas entradas e saídas"
+                icon='arrowDonw'
+            />
 
-                <MessageBox
-                    title={message.title}
-                    description={message.description}
-                    footerText={message.footerText}
-                    icon={message.icon}
-                />
+            <MessageBox
+                title={message.title}
+                description={message.description}
+                footerText={message.footerText}
+                icon={message.icon}
+            />
 
-                <PieChartBox data={relationExpensesVersusGains} />
+            <PieChartBox data={relationExpensesVersusGains} />
 
-                <HistoryBox 
-                    data={historyData} 
-                    lineColorAmountEntry="#F7931B"
-                    lineColorAmountOutput="#E44C4E"
-                />
+            <HistoryBox 
+                data={historyData} 
+                lineColorAmountEntry="#F7931B"
+                lineColorAmountOutput="#E44C4E"
+            />
 
-              
-               
-                
-            </Content>
-        </Container>
-    );
+            <BarChartBox 
+                title="Saídas"
+                data={relationExpensevesRecurrentVersusEventual} 
+            />
+            
+            <BarChartBox 
+                title="Entradas"
+                data={relationGainsRecurrentVersusEventual} 
+            />
+            
+        </Content>
+    </Container>
+);
 }
 
 export default Dashboard;
