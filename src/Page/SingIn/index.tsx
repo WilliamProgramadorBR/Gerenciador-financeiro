@@ -20,6 +20,11 @@ const SignIn: React.FC = () => {
 
     const { signIn } = useAuth();
 
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        signIn(email, password);
+    };
+
     return (
         <Container>
             <Logo>
@@ -27,7 +32,7 @@ const SignIn: React.FC = () => {
                 <h2>Minha Carteira</h2>
             </Logo>
 
-            <Form onSubmit={() => signIn(email, password)}>
+            <Form onSubmit={handleSubmit}>
                 <FormTitle>Entrar</FormTitle>
 
                 <Input 
@@ -48,5 +53,6 @@ const SignIn: React.FC = () => {
         </Container>
     );
 }
+
 
 export default SignIn;
