@@ -1,15 +1,19 @@
+// index.tsx (ou main.tsx)
 import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App';
+import { createRoot } from 'react-dom/client';
 import { ThemeProvider } from './hooks/theme';
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
-);
+import { AuthProvider } from './hooks/auth'; // Verifique o caminho
+import App from './App'; // Certifique-se de que `App` é importado corretamente
+
+const container = document.getElementById('root')!;
+const root = createRoot(container);
 
 root.render(
   <React.StrictMode>
     <ThemeProvider>
-    <App />
+      <AuthProvider>
+        <App />
+      </AuthProvider>
     </ThemeProvider>
   </React.StrictMode>
 );

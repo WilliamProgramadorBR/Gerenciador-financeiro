@@ -1,5 +1,5 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
-const path = require('path');
+const path = require('node:path');
 
 // Defina o caminho para o ícone PNG
 const iconPath = path.join(__dirname, 'imgelectron', 'image.png'); // Atualize com o caminho correto para o seu ícone PNG
