@@ -19,7 +19,7 @@ function createWindow() {
   });
 
   if (process.env.NODE_ENV === 'development') {
-    mainWindow.loadFile(path.join(__dirname, 'public', 'index.html'));
+    mainWindow.loadFile(path.join(__dirname, 'build', 'index.html'));
   } else {
     mainWindow.loadURL('http://localhost:3000');
   }

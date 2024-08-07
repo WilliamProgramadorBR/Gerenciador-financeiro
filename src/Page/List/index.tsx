@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import axios from 'axios';  // Importa axios para fazer a requisição
 import { Container, Content, Button, Filters } from './styles';
 import { v4 as uuid } from 'uuid';
 import { useParams } from 'react-router-dom';
@@ -7,8 +8,6 @@ import SelectInput from '../../components/SelectInput';
 import ContentHeader from '../../components/ContentHeader';
 import HistoryFinanceCard from '../../components/HistoryFinanceCard';
 
-import gains from '../../repositories/gains';
-import expenses from '../../repositories/expenses';
 import formatCurrency from '../../utils/formatCurrency';
 import formatDate from '../../utils/formatDate';
 import listOfMonths from '../../utils/months';
@@ -30,20 +29,22 @@ const List: React.FC = () => {
   const [frequencyFilterSelected, setFrequencyFilterSelected] = useState(['recorrente', 'eventual']);
   const [showAll, setShowAll] = useState(false);
 
+  const [apiData, setApiData] = useState<any[]>([]); // Estado para armazenar dados da API
+
   const pageData = useMemo(() => {
     return type === 'entry-balance' ?
       {
         title: 'Entradas',
         lineColor: '#4E41F0',
-        data: gains
+        data: apiData
       }
       :
       {
         title: 'Saídas',
         lineColor: '#E44C4E',
-        data: expenses
+        data: apiData
       }
-  }, [type]);
+  }, [type, apiData]);
 
   const years = useMemo(() => {
     let uniqueYears: number[] = [];
@@ -104,6 +105,19 @@ const List: React.FC = () => {
       throw new Error('invalid year value. Is accept integer numbers.');
     }
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('http://localhost:3008/api/ganhos');
+        setApiData(response.data);
+      } catch (error) {
+        console.error('Error fetching data', error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   useEffect(() => {
     const { data } = pageData;
