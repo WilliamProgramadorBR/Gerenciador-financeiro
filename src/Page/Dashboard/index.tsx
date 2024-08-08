@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 
 
 import ContentHeader from '../../components/ContentHeader';
@@ -9,46 +9,99 @@ import PieChartBox from '../../components/PieChart';
 import HistoryBox from '../../components/HistoryBox';
 import BarChartBox from '../../components/BarChatBox'
 
-import expenses from '../../repositories/expenses';
-import gains from '../../repositories/gains';
 import listOfMonths from '../../utils/months';
 
 import happyImg from '../../assets/happy.svg';
 import sadImg from '../../assets/sad.svg';
 import grinningImg from '../../assets/grinning.svg';
 import opsImg from '../../assets/ops.svg';
-
+import { fetchTransactions } from '../../repositories/api';
 
 import { 
     Container,
     Content, 
 } from './styled';
 
+interface Transaction {
+    date: string | number | Date;
+    frequency: string;
+    type: 'entrada' | 'saída'; // Ajuste o tipo conforme necessário
+    amount: number;
+    // Adicione outros campos conforme necessário
+}
 
 const Dashboard: React.FC = () => {
-    const [monthSelected, setMonthSelected] = useState<number>(new Date().getMonth() + 1);
-    const [yearSelected, setYearSelected] = useState<number>(new Date().getFullYear());
+    
+        const [monthSelected, setMonthSelected] = useState<number>(new Date().getMonth() + 1);
+        const [yearSelected, setYearSelected] = useState<number>(new Date().getFullYear());
+        const [gains, setGains] = useState<Transaction[]>([]);
+        const [expenses, setExpenses] = useState<Transaction[]>([]);
+        const [loading, setLoading] = useState<boolean>(true);
+        const [error, setError] = useState<Error | null>(null);
+        function Atualizar() {
+            fetchTransactions()
+                .then(() => {
+                    window.location.reload(); // Atualiza a página
+                })
+                .catch(error => {
+                    console.error('Erro ao atualizar as transações:', error);
+                });
+        }
+        
+    
+        useEffect(() => {
+            const fetchData = async () => {
+                try {
+                    const response = await fetch('http://localhost:3008/api/ganhos');
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch data');
+                    }
+                    const data: Transaction[] = await response.json();
+                    
+                    const filteredGains = data.filter(transaction => transaction.type === 'entrada');
+                    const filteredExpenses = data.filter(transaction => transaction.type === 'saída');
+                    
+                    setGains(filteredGains);
+                    setExpenses(filteredExpenses);
+                    localStorage.setItem('gains', JSON.stringify(filteredGains));
+                    localStorage.setItem('expenses', JSON.stringify(filteredExpenses));
+                } catch (error) {
+                    setError(error as Error);
+                } finally {
+                    setLoading(false);
+                }
+            };
+    
+            const savedGains = localStorage.getItem('gains');
+            const savedExpenses = localStorage.getItem('expenses');
+    
+            if (savedGains && savedExpenses) {
+                setGains(JSON.parse(savedGains));
+                setExpenses(JSON.parse(savedExpenses));
+                setLoading(false);
+            } else {
+                fetchData();
+            }
+        }, []);
 
 
-    const years = useMemo(() => {
-        let uniqueYears: number[] = [];
-
-        [...expenses, ...gains].forEach(item => {
-            const date = new Date(item.date);
-            const year = date.getFullYear();
-
-            if(!uniqueYears.includes(year)){
-                uniqueYears.push(year)
-           }
-        });
-
-        return uniqueYears.map(year => {
-            return {
+        const years = useMemo(() => {
+            let uniqueYears: number[] = [];
+    
+            [...expenses, ...gains].forEach(item => {
+                const date = new Date(item.date);
+                const year = date.getFullYear();
+    
+                if (!uniqueYears.includes(year)) {
+                    uniqueYears.push(year);
+                }
+            });
+    
+            return uniqueYears.map(year => ({
                 value: year,
                 label: year,
-            }
-        });
-    },[]);
+            }));
+        }, [gains, expenses]);
 
 
     const months = useMemo(() => {
@@ -63,44 +116,50 @@ const Dashboard: React.FC = () => {
     
     const totalExpenses = useMemo(() => {
         let total: number = 0;
-
+    
         expenses.forEach(item => {
             const date = new Date(item.date);
             const year = date.getFullYear();
             const month = date.getMonth() + 1;
-
-            if(month === monthSelected && year === yearSelected){
-                try{
-                    total += Number(item.amount)
-                }catch{
-                    throw new Error('Invalid amount! Amount must be number.')
+    
+            if (month === monthSelected && year === yearSelected) {
+                // Verifique se amount é um número válido antes de somar
+                const amount = Number(item.amount);
+                if (isNaN(amount)) {
+                    console.error('Invalid amount:', item.amount);
+                    return;
                 }
+                total += amount;
             }
         });
-
+    
         return total;
-    },[monthSelected, yearSelected]);
+    }, [expenses, monthSelected, yearSelected]);
+    
 
 
     const totalGains = useMemo(() => {
         let total: number = 0;
-
+    
         gains.forEach(item => {
             const date = new Date(item.date);
             const year = date.getFullYear();
             const month = date.getMonth() + 1;
-
-            if(month === monthSelected && year === yearSelected){
-                try{
-                    total += Number(item.amount)
-                }catch{
-                    throw new Error('Invalid amount! Amount must be number.')
+    
+            if (month === monthSelected && year === yearSelected) {
+                // Verifique se amount é um número válido antes de somar
+                const amount = Number(item.amount);
+                if (isNaN(amount)) {
+                    console.error('Invalid amount:', item.amount);
+                    return;
                 }
+                total += amount;
             }
         });
-
+    
         return total;
-    },[monthSelected, yearSelected]);
+    }, [gains, monthSelected, yearSelected]);
+    
 
     const totalBalance = useMemo(() => {
         return totalGains - totalExpenses;
@@ -167,7 +226,6 @@ const Dashboard: React.FC = () => {
     },[totalGains, totalExpenses]);
 
     const historyData = useMemo(() => {
-    
         return listOfMonths.map((_, month) => {
             
             let amountEntry = 0;
@@ -175,47 +233,46 @@ const Dashboard: React.FC = () => {
                 const date = new Date(gain.date);
                 const gainMonth = date.getMonth();
                 const gainYear = date.getFullYear();
-
-                if(gainMonth === month && gainYear === yearSelected){
-                    try{
+    
+                if (gainMonth === month && gainYear === yearSelected) {
+                    try {
                         amountEntry += Number(gain.amount);
-                    }catch{
-                        throw new Error('amountEntry is invalid. amountEntry must be valid number.')
+                    } catch {
+                        throw new Error('amountEntry is invalid. amountEntry must be a valid number.');
                     }
                 }
             });
-
+    
             let amountOutput = 0;
             expenses.forEach(expense => {
                 const date = new Date(expense.date);
                 const expenseMonth = date.getMonth();
                 const expenseYear = date.getFullYear();
-
-                if(expenseMonth === month && expenseYear === yearSelected){
-                    try{
+    
+                if (expenseMonth === month && expenseYear === yearSelected) {
+                    try {
                         amountOutput += Number(expense.amount);
-                    }catch{
-                        throw new Error('amountOutput is invalid. amountOutput must be valid number.')
+                    } catch {
+                        throw new Error('amountOutput is invalid. amountOutput must be a valid number.');
                     }
                 }
             });
-
-
+    
             return {
                 monthNumber: month,
                 month: listOfMonths[month].substr(0, 3),
                 amountEntry,
                 amountOutput
-            }
+            };
         })
         .filter(item => {
-          const currentMonth = new Date().getMonth();
-          const currentYear = new Date().getFullYear();
-          return (yearSelected === currentYear && item.monthNumber <= currentMonth) || (yearSelected < currentYear)
-      });
-      
-     
-  }, [yearSelected,]);
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+            return (yearSelected === currentYear && item.monthNumber <= currentMonth) || (yearSelected < currentYear);
+        });
+    
+    }, [gains, expenses, yearSelected]); // Adicione gains e expenses às dependências
+    
 
   const relationExpensevesRecurrentVersusEventual = useMemo(() => {
     let amountRecurrent = 0;
@@ -258,7 +315,7 @@ const Dashboard: React.FC = () => {
             color: "#E44C4E"
         }
     ];
-},[monthSelected, yearSelected]);
+},[monthSelected, yearSelected,expenses]);
 
 
 const relationGainsRecurrentVersusEventual = useMemo(() => {
@@ -302,7 +359,7 @@ const relationGainsRecurrentVersusEventual = useMemo(() => {
             color: "#E44C4E"
         }
     ];
-},[monthSelected, yearSelected]);
+},[monthSelected, yearSelected, gains]);
 
 
   
@@ -367,7 +424,7 @@ return (
                 color="#E44C4E"
                 amount={totalExpenses}
                 footerlabel="atualizado com base nas entradas e saídas"
-                icon='arrowDonw'
+                icon='arrowDown'
             />
 
             <MessageBox
@@ -396,6 +453,7 @@ return (
             />
             
         </Content>
+        <button onClick={Atualizar}>Atualizar Dados</button>
     </Container>
 );
 }

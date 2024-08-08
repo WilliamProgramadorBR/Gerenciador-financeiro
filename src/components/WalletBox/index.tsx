@@ -9,7 +9,7 @@ interface IWalletBoxProps{
     title: string;
     amount: number;
     footerlabel: string;
-    icon:'dolar' | 'arrowUp' | 'arrowDonw';
+    icon:'dolar' | 'arrowUp' | 'arrowDown';
     color: string;
 }
 const WalletBox: React.FC<IWalletBoxProps> = ({   title,
@@ -21,7 +21,7 @@ const WalletBox: React.FC<IWalletBoxProps> = ({   title,
         switch (icon){
             case 'dolar':
                 return dolarImg;
-            case'arrowDonw':
+            case'arrowDown':
             return arrowDownImg;
             case 'arrowUp':
                 return arrowUpImg

@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import axios from 'axios';  // Importa axios para fazer a requisição
 import { Container, Content, Button, Filters } from './styles';
 import { v4 as uuid } from 'uuid';
 import { useParams } from 'react-router-dom';
@@ -28,23 +27,39 @@ const List: React.FC = () => {
   const [yearSelected, setYearSelected] = useState<number>(new Date().getFullYear());
   const [frequencyFilterSelected, setFrequencyFilterSelected] = useState(['recorrente', 'eventual']);
   const [showAll, setShowAll] = useState(false);
+  const [apiData, setApiData] = useState<any[]>([]);
 
-  const [apiData, setApiData] = useState<any[]>([]); // Estado para armazenar dados da API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('http://localhost:3008/api/ganhos');
+        const data = await response.json();
+        setApiData(data);
+      } catch (error) {
+        console.error('Erro ao buscar dados da API:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const filteredData = useMemo(() => {
+    return apiData.filter(item => item.type === (type === 'entry-balance' ? 'entrada' : 'saída'));
+  }, [apiData, type]);
 
   const pageData = useMemo(() => {
-    return type === 'entry-balance' ?
-      {
-        title: 'Entradas',
-        lineColor: '#4E41F0',
-        data: apiData
-      }
-      :
-      {
-        title: 'Saídas',
-        lineColor: '#E44C4E',
-        data: apiData
-      }
-  }, [type, apiData]);
+    return type === 'entry-balance'
+      ? {
+          title: 'Entradas',
+          lineColor: '#4E41F0',
+          data: filteredData,
+        }
+      : {
+          title: 'Saídas',
+          lineColor: '#E44C4E',
+          data: filteredData,
+        };
+  }, [type, filteredData]);
 
   const years = useMemo(() => {
     let uniqueYears: number[] = [];
@@ -84,7 +99,7 @@ const List: React.FC = () => {
       const filtered = frequencyFilterSelected.filter(item => item !== frequency);
       setFrequencyFilterSelected(filtered);
     } else {
-      setFrequencyFilterSelected((prev) => [...prev, frequency]);
+      setFrequencyFilterSelected(prev => [...prev, frequency]);
     }
   };
 
@@ -105,19 +120,6 @@ const List: React.FC = () => {
       throw new Error('invalid year value. Is accept integer numbers.');
     }
   };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get('http://localhost:3008/api/ganhos');
-        setApiData(response.data);
-      } catch (error) {
-        console.error('Error fetching data', error);
-      }
-    };
-
-    fetchData();
-  }, []);
 
   useEffect(() => {
     const { data } = pageData;
@@ -151,12 +153,12 @@ const List: React.FC = () => {
       <ContentHeader title={pageData.title} lineColor={pageData.lineColor}>
         <SelectInput
           options={months}
-          onChange={(e) => handleMonthSelected(e.target.value)}
+          onChange={e => handleMonthSelected(e.target.value)}
           defaultValue={monthSelected}
         />
         <SelectInput
           options={years}
-          onChange={(e) => handleYearSelected(e.target.value)}
+          onChange={e => handleYearSelected(e.target.value)}
           defaultValue={yearSelected}
         />
       </ContentHeader>
@@ -186,7 +188,7 @@ const List: React.FC = () => {
       </Filters>
 
       <Content>
-        <ul style={{ overflowY: "visible" }}>
+        <ul style={{ overflowY: 'visible' }}>
           {itemsToShow.map(item => (
             <HistoryFinanceCard
               key={item.id}
@@ -206,6 +208,6 @@ const List: React.FC = () => {
       </Content>
     </Container>
   );
-}
+};
 
 export default List;
