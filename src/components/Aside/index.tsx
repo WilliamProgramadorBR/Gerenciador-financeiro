@@ -9,7 +9,7 @@ import {
     MdClose,
     MdMenu,
     MdAdd,
-    MdDelete,MdEdit
+    MdEdit
 } from 'react-icons/md';
 
 import logoImg from '../../assets/logo.svg';

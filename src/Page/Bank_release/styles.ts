@@ -58,7 +58,7 @@ export const Button = styled.button`
     border: none;
     border-radius: 4px;
     background-color: ${props => props.theme.colors.tertiary};
-    color: ${props => props.theme.colors.primary};
+    color: ${props => props.theme.colors.white};
     font-size: 1rem;
     cursor: pointer;
     transition: background-color 0.3s;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { fetchTransactions } from '../../repositories/api'; // Atualize o caminho conforme necessário
 import { Transaction } from '../../repositories/types'; // Ajuste o caminho conforme necessário
-import { Container, Title, Button, FormGroup, Label, Input, Select, CardText } from './styles'; // Atualize o caminho conforme necessário
+import { Container, Title, Button, FormGroup, Label, Input, Select, CardText, TitleText } from './styles'; // Atualize o caminho conforme necessário
 
 const TransactionsPage: React.FC = () => {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -69,9 +69,9 @@ const TransactionsPage: React.FC = () => {
             <Title>Manage Transactions</Title>
             {transactions.map(transaction => (
                 <div key={transaction.id} style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: '#f9f9f9', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
-                    <h2>{transaction.description}</h2>
-                    <p>Amount: {transaction.amount}</p>
-                    <p>Date: {new Date(transaction.date).toLocaleDateString()}</p>
+                    <TitleText>{transaction.description}</TitleText>
+                    <CardText>Valor: {transaction.amount}</CardText>
+                    <CardText>Data: {new Date(transaction.date).toLocaleDateString()}</CardText>
                     <Button onClick={() => {
                         setEditTransaction(transaction);
                         setDescription(transaction.description || '');

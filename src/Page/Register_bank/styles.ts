@@ -81,5 +81,11 @@ export const Card = styled.div`
 
 // Estilo para o texto dentro do card
 export const CardText = styled.p`
-    color: ${props => props.theme.colors.primary}; // Cor do texto dentro do card
+    color: ${props => props.theme.colors.success}; // Cor do texto dentro do card
 `;
+export const TitleText = styled.h1`
+    color: black; // Cor do texto dentro do card
+`;
+
+export const textStyled = styled.p`
+color: ${props=>props.theme.colors.primary}`

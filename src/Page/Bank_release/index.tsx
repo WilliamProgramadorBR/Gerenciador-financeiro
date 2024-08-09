@@ -67,12 +67,13 @@ const FormPage: React.FC = () => {
 
     return (
         <Container>
-            <Title>Submit Transaction</Title>
+            <Title>Inserção de dados no finanças</Title>
             <Form onSubmit={handleSubmit}>
                 <FormGroup>
-                    <Label>Description</Label>
+                    <Label>Titulo descrição</Label>
                     <Input
                         type="text"
+                        placeholder='Exemplo: salário'
                         name="description"
                         value={formData.description}
                         onChange={handleChange}
@@ -80,9 +81,10 @@ const FormPage: React.FC = () => {
                     />
                 </FormGroup>
                 <FormGroup>
-                    <Label>Amount</Label>
+                    <Label>Valor</Label>
                     <Input
                         type="number"
+                        placeholder='Insira um valor númerico sem virgula'
                         name="amount"
                         value={formData.amount}
                         onChange={handleChange}
@@ -90,7 +92,7 @@ const FormPage: React.FC = () => {
                     />
                 </FormGroup>
                 <FormGroup>
-                    <Label>Type</Label>
+                    <Label>Tipo</Label>
                     <Select
                         name="type"
                         value={formData.type}
@@ -102,9 +104,10 @@ const FormPage: React.FC = () => {
                     </Select>
                 </FormGroup>
                 <FormGroup>
-                    <Label>Frequency</Label>
+                    <Label>Frequencia entrada/gasto</Label>
                     <Select
                         name="frequency"
+                        
                         value={formData.frequency}
                         onChange={handleChange}
                         required
@@ -114,16 +117,17 @@ const FormPage: React.FC = () => {
                     </Select>
                 </FormGroup>
                 <FormGroup>
-                    <Label>Date</Label>
+                    <Label>Data</Label>
                     <Input
                         type="date"
+                        placeholder='Insira uma data válida'
                         name="date"
                         value={formData.date}
                         onChange={handleChange}
                         required
                     />
                 </FormGroup>
-                <Button type="submit">Submit</Button>
+                <Button type="submit">Adicionar</Button>
             </Form>
             {error && <ErrorMessage>{error}</ErrorMessage>}
         </Container>
