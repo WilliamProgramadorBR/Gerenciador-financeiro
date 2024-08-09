@@ -122,7 +122,55 @@ async function startServer() {
       res.status(500).send('Erro ao adicionar a despesa');
     }
   });
-
+  app.put('/api/ganhos/:id', async (req, res) => {
+    const { id } = req.params;
+    const { description, amount, type, frequency, date } = req.body;
+    try {
+      await db.run(
+        'UPDATE ganhos SET description = ?, amount = ?, type = ?, frequency = ?, date = ? WHERE id = ?',
+        [description, amount, type, frequency, date, id]
+      );
+      res.status(200).send('Ganho atualizado com sucesso!');
+    } catch (err) {
+      res.status(500).send('Erro ao atualizar o ganho');
+    }
+  });
+  
+  // Atualizar gastos
+  app.put('/api/gastos/:id', async (req, res) => {
+    const { id } = req.params;
+    const { description, amount, type, frequency, date } = req.body;
+    try {
+      await db.run(
+        'UPDATE gastos SET description = ?, amount = ?, type = ?, frequency = ?, date = ? WHERE id = ?',
+        [description, amount, type, frequency, date, id]
+      );
+      res.status(200).send('Despesa atualizada com sucesso!');
+    } catch (err) {
+      res.status(500).send('Erro ao atualizar a despesa');
+    }
+  });
+  
+  app.delete('/api/ganhos/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+      await db.run('DELETE FROM ganhos WHERE id = ?', [id]);
+      res.status(200).send('Ganho excluído com sucesso!');
+    } catch (err) {
+      res.status(500).send('Erro ao excluir o ganho');
+    }
+  });
+  
+  // Excluir gastos
+  app.delete('/api/gastos/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+      await db.run('DELETE FROM gastos WHERE id = ?', [id]);
+      res.status(200).send('Despesa excluída com sucesso!');
+    } catch (err) {
+      res.status(500).send('Erro ao excluir a despesa');
+    }
+  });
   // Iniciar o servidor
   const PORT = process.env.PORT || 3008;
   server = app.listen(PORT, () => {

@@ -1,5 +1,6 @@
 // types.ts
 export interface Transaction {
+    description: string;
     date: string | number | Date;
     frequency: string;
     id: number; // Ajuste conforme necessário
