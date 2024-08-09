@@ -10,7 +10,8 @@ import {
     Select,
     Button,
     ErrorMessage
-} from './styles'; // Ajuste o caminho conforme necessário
+} from './styles';
+import { NumericFormat } from 'react-number-format'; // Importando o NumericFormat
 
 interface FormData {
     description: string;
@@ -82,12 +83,17 @@ const FormPage: React.FC = () => {
                 </FormGroup>
                 <FormGroup>
                     <Label>Valor</Label>
-                    <Input
-                        type="number"
-                        placeholder='Insira um valor númerico sem virgula'
-                        name="amount"
+                    <NumericFormat
                         value={formData.amount}
-                        onChange={handleChange}
+                        onValueChange={(values) => setFormData(prevState => ({
+                            ...prevState,
+                            amount: values.floatValue || 0
+                        }))}
+                        thousandSeparator="."
+                        decimalSeparator=","
+                        prefix="R$ "
+                        displayType="input"
+                        customInput={Input} // Aplicando o estilo do Input
                         required
                     />
                 </FormGroup>
@@ -107,7 +113,6 @@ const FormPage: React.FC = () => {
                     <Label>Frequencia entrada/gasto</Label>
                     <Select
                         name="frequency"
-                        
                         value={formData.frequency}
                         onChange={handleChange}
                         required

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { NumericFormat } from 'react-number-format';
+
 import { fetchTransactions } from '../../repositories/api'; // Atualize o caminho conforme necessário
 import { Transaction } from '../../repositories/types'; // Ajuste o caminho conforme necessário
 import { Container, Title, Button, FormGroup, Label, Input, Select, CardText, TitleText } from './styles'; // Atualize o caminho conforme necessário
@@ -76,9 +78,9 @@ const TransactionsPage: React.FC = () => {
                         setEditTransaction(transaction);
                         setDescription(transaction.description || '');
                         setAmount(typeof transaction.amount === 'number' ? transaction.amount : Number(transaction.amount));
-                        setType(transaction.type as 'entrada' | 'saída'); // Ajuste conforme necessário
-                        setFrequency(transaction.frequency as 'recorrente' | 'eventual'); // Ajuste conforme necessário
-                        setDate(typeof transaction.date === 'string' ? transaction.date : (transaction.date instanceof Date ? transaction.date.toISOString().split('T')[0] : '')); // Ajuste conforme necessário
+                        setType(transaction.type as 'entrada' | 'saída');
+                        setFrequency(transaction.frequency as 'recorrente' | 'eventual');
+                        setDate(typeof transaction.date === 'string' ? transaction.date : (transaction.date instanceof Date ? transaction.date.toISOString().split('T')[0] : ''));
                     }}>Edit</Button>
                     <Button onClick={() => handleDelete(transaction.id)}>Delete</Button>
                 </div>
@@ -94,12 +96,25 @@ const TransactionsPage: React.FC = () => {
                         />
                     </FormGroup>
                     <FormGroup>
-                        <Label><CardText>Valor</CardText></Label>
-                        <Input
-                            type="number"
-                            value={amount}
-                            onChange={(e) => setAmount(Number(e.target.value))}
-                        />
+                    <Label><CardText>Valor</CardText></Label>
+<NumericFormat
+    value={amount}
+    onValueChange={(values) => setAmount(values.floatValue || 0)}
+    thousandSeparator="."
+    decimalSeparator=","
+    prefix="R$ "
+    displayType="input"
+    style={{
+        width: '100%', // Define a largura total do campo
+        padding: '10px', // Ajusta o preenchimento interno do campo
+        fontSize: '16px', // Define o tamanho da fonte
+        borderRadius: '8px', // Arredonda os cantos
+        border: '1px solid #ccc' // Define uma borda
+    }}
+/>
+
+
+
                     </FormGroup>
                     <FormGroup>
                         <Label><CardText>Tipo</CardText></Label>
