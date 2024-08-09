@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 
 import logoImg from '../../assets/logo.svg';
 
@@ -12,18 +12,22 @@ import {
     Logo,
     Form,
     FormTitle,
+    SignUpLink, // Adicione um novo estilo para o link
 } from './styles';
 
 const SignIn: React.FC = () => {
     const [email, setEmail] = useState<string>('');
-    const [password, setPassword] = useState<string>('');    
+    const [password, setPassword] = useState<string>('');
 
     const { signIn } = useAuth();
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        console.log('Email:', email); // Adicione este log para verificar o valor do email
+        console.log('Password:', password); // Adicione este log para verificar o valor da senha
         signIn(email, password);
     };
+    
 
     return (
         <Container>
@@ -35,12 +39,13 @@ const SignIn: React.FC = () => {
             <Form onSubmit={handleSubmit}>
                 <FormTitle>Entrar</FormTitle>
 
-                <Input 
+                <Input  
                     type="email"
                     placeholder="e-mail"
                     required
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => setEmail(e.target.value)} // Verifique se o valor está sendo atualizado corretamente
                 />
+               
                 <Input 
                     type="password"
                     placeholder="senha"
@@ -48,11 +53,12 @@ const SignIn: React.FC = () => {
                     onChange={(e) => setPassword(e.target.value)}
                 />
 
-               <Button type="submit">Acessar</Button>
+                <Button type="submit">Acessar</Button>
+
+                <SignUpLink href="/signup">Não tem uma conta? Cadastre-se</SignUpLink> {/* Link para a página de cadastro */}
             </Form>
         </Container>
     );
 }
-
 
 export default SignIn;

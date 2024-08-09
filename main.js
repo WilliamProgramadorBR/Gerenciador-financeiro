@@ -30,10 +30,26 @@ function createWindow() {
     mainWindow.loadURL('http://localhost:3000');
   }
 
-  mainWindow.on('closed', () => {
-    mainWindow = null;
+  ipcMain.on('focus-main-window', () => {
+    if (mainWindow) {
+      mainWindow.focus();
+    }
   });
 }
+
+app.whenReady().then(createWindow);
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});
+
+app.on('activate', () => {
+  if (mainWindow === null) {
+    createWindow();
+  }
+});
 
 // Configurar e abrir o banco de dados
 async function setupDatabase() {
@@ -51,6 +67,15 @@ async function setupDatabase() {
       type TEXT NOT NULL,
       frequency TEXT NOT NULL,
       date TEXT NOT NULL
+    );
+  `);
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+      username TEXT NOT NULL,
+      email TEXT NOT NULL UNIQUE,
+      password TEXT NOT NULL
     );
   `);
 
@@ -76,6 +101,45 @@ async function startServer() {
 
   app.use(cors());
   app.use(express.json());
+
+  app.post('/api/login', async (req, res) => {
+    const {email, password } = req.body;
+    console.log("Bateu no banco " + email, password)
+    try {
+      const user = await db.get('SELECT * FROM users WHERE email = ? AND password = ?', [email, password]);
+      if (user) {
+      
+        res.status(200).json({ message: 'Login bem-sucedido', user });
+        console.log(user)
+      } else {
+        res.status(401).send('Credenciais inválidas');
+      }
+    } catch (err) {
+      res.status(500).send('Erro ao autenticar o usuário');
+    }
+  });
+  // Rota para cadastro de novos usuários
+app.post('/api/register', async (req, res) => {
+  const { username, email, password } = req.body;
+  console.log(username, email, password)
+  try {
+    // Verificar se o usuário já existe
+    const user = await db.get('SELECT * FROM users WHERE username = ?', [email]);
+    if (user) {
+      return res.status(400).send('Usuário já cadastrado');
+    }
+
+    // Adicionar novo usuário
+    await db.run(
+      'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
+      [username, email, password]
+    );
+    res.status(201).send('Usuário cadastrado com sucesso!');
+  } catch (err) {
+    res.status(500).send('Erro ao cadastrar o usuário');
+  }
+});
+
 
   // Rotas para ganhos
   app.get('/api/ganhos', async (req, res) => {

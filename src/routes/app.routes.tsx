@@ -7,6 +7,7 @@ import FormPage from '../Page/Bank_release';
 import ExpensesPage from '../Page/Register_bank'
 import { useAuth } from '../hooks/auth';
 import Layout from '../components/Layout';
+import SignUp from '../Page/SignUp';
 
 
 const ProtectedRoute: React.FC<{ element: React.ReactElement }> = ({ element }) => {
@@ -17,11 +18,14 @@ const ProtectedRoute: React.FC<{ element: React.ReactElement }> = ({ element }) 
 const AppRoutes: React.FC = () => (
   <Routes>
     <Route path="/" element={<SignIn />} />
+    <Route path="/signup" element={<SignUp />} />
     <Route path="/dashboard" element={<ProtectedRoute element={<Layout><Dashboard /></Layout>} />} />
     <Route path="/register" element={<ProtectedRoute element={<Layout><FormPage /></Layout>} />} />
     <Route path="/list_register" element={<ProtectedRoute element={<Layout><ExpensesPage /></Layout>} />} />
     <Route path="/list/:type" element={<ProtectedRoute element={<Layout><List /></Layout>} />} />
+    <Route path="*" element={<h1>Page Not Found</h1>} /> {/* Fallback para rotas não definidas */}
   </Routes>
 );
+
 
 export default AppRoutes;

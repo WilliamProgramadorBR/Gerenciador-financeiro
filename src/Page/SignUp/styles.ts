@@ -31,7 +31,7 @@ export const Logo = styled.div`
 
 export const Form = styled.form`
     width: 300px;
-    height: 300px;
+    height: 350px; /* Aumentado para acomodar o link de login */
 
     padding: 30px;
 
@@ -52,6 +52,7 @@ export const FormTitle = styled.h1`
         border-bottom: 10px solid ${props => props.theme.colors.warning};  
     }
 `;
+
 export const SignUpLink = styled.a`
   display: block;
   margin-top: 1rem;

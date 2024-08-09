@@ -4,8 +4,10 @@ import { NumericFormat } from 'react-number-format';
 import { fetchTransactions } from '../../repositories/api'; // Atualize o caminho conforme necessário
 import { Transaction } from '../../repositories/types'; // Ajuste o caminho conforme necessário
 import { Container, Title, Button, FormGroup, Label, Input, Select, CardText, TitleText } from './styles'; // Atualize o caminho conforme necessário
+import { Link } from 'react-router-dom';
 
 const TransactionsPage: React.FC = () => {
+  
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [editTransaction, setEditTransaction] = useState<Transaction | null>(null);
     const [description, setDescription] = useState('');
@@ -68,7 +70,7 @@ const TransactionsPage: React.FC = () => {
 
     return (
         <Container>
-            <Title>Manage Transactions</Title>
+            <Title>Controle suas transações</Title>
             {transactions.map(transaction => (
                 <div key={transaction.id} style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: '#f9f9f9', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
                     <TitleText>{transaction.description}</TitleText>
@@ -144,10 +146,12 @@ const TransactionsPage: React.FC = () => {
                             onChange={e => setDate(e.target.value)}
                         />
                     </FormGroup>
-                    <Button onClick={handleUpdate}>Save Changes</Button>
+                    <Button onClick={handleUpdate}>Salva edição</Button>
                 </div>
             )}
-            <Button onClick={() => console.log('Add new transaction')}>Add New Transaction</Button>
+               <Link to="/register">
+      <Button>Inserir nova transação</Button>
+    </Link>
         </Container>
     );
 };

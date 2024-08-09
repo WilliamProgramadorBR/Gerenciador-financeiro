@@ -15,6 +15,19 @@ import {
 
 const MainHeader: React.FC = () => {
     const { toggleTheme, theme } = useTheme();
+    const storedUser = localStorage.getItem('@minha-carteira:user')
+    let username
+    
+    if (storedUser) {
+        const user = JSON.parse(storedUser);
+        console.log('ID:', user.id);
+       username =  user.username
+        console.log('Email:', user.email);
+        console.log('Senha:', user.password);
+      } else {
+        console.log('Nenhum usuário encontrado no localStorage.');
+      }
+
 
     const [darkTheme, setDarkTheme] = useState(() => theme.title === 'dark' ? true : false);
 
@@ -39,7 +52,7 @@ const MainHeader: React.FC = () => {
 
             <Profile>
                 <Welcome>Olá, {emoji}</Welcome>
-                <UserName>William</UserName>
+                <UserName>{username}</UserName>
             </Profile>
         </Container>
     );
