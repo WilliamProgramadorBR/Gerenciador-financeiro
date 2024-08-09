@@ -20,6 +20,7 @@ import { fetchTransactions } from '../../repositories/api';
 import { 
     Container,
     Content, 
+    UpdateButton
 } from './styled';
 
 interface Transaction {
@@ -389,6 +390,7 @@ const relationGainsRecurrentVersusEventual = useMemo(() => {
 console.log(historyData)
 return (
     <Container>
+         <UpdateButton onClick={Atualizar}>Atualizar Dados</UpdateButton>
         <ContentHeader title="Dashboard" lineColor="#F7931B">
             <SelectInput 
                 options={months}
@@ -453,7 +455,7 @@ return (
             />
             
         </Content>
-        <button onClick={Atualizar}>Atualizar Dados</button>
+       
     </Container>
 );
 }
