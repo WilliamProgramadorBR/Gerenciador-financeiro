@@ -1,0 +1,44 @@
+/* Certifique-se de que o corpo da página ocupa toda a altura da tela e tem um alinhamento flexível */
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f0f0f0; /* Cor de fundo leve para contraste */
+    font-family: Arial, sans-serif;
+}
+
+/* Container principal para o conteúdo de carregamento */
+.loading-container {
+    text-align: center; /* Centraliza o texto */
+}
+
+/* Animação do spinner */
+.spinner {
+    border: 8px solid #f3f3f3;
+    border-top: 8px solid #3498db;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto; /* Garante que o spinner esteja centralizado horizontalmente */
+}
+
+/* Animação do spinner */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Estiliza o texto de carregamento */
+p {
+    margin: 10px 0; /* Espaçamento acima e abaixo do texto */
+    color: #333; /* Cor do texto */
+    font-size: 16px; /* Tamanho do texto */
+}
+
+#status-text {
+    font-weight: bold; /* Texto em negrito para destaque */
+}

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carregando</title>
+    <link rel="stylesheet" href="loading.css">
+</head>
+<body>
+    <div class="loading-container">
+        <div class="spinner"></div>
+        <p>Carregando...</p>
+        <p id="status-text">Aguardando enquanto preparamos tudo para você.</p>
+    </div>
+
+    <script>
+        // Função para verificar o status do servidor React
+        function checkReactServer() {
+            return fetch('http://localhost:3000')
+                .then(response => response.ok)
+                .catch(() => false);
+        }
+
+        // Atualiza o texto com base no status do servidor
+        function updateStatusText(status) {
+            const statusText = document.getElementById('status-text');
+            if (status) {
+                statusText.textContent = 'O servidor React está funcionando!';
+            } else {
+                // Texto dinâmico durante o carregamento
+                const messages = [
+                    'Aguardando enquanto preparamos tudo para você.',
+                    'Quase lá, estamos quase prontos!',
+                    'Só um momento, estamos ajustando tudo.',
+                    'Por favor, aguarde enquanto o React está iniciando.',
+                    'Estamos preparando a melhor experiência para você!',
+                    'Carregando... em breve você verá o que preparamos.',
+                    'Estamos dando os toques finais.',
+                    'Aguarde um pouco mais enquanto tudo se ajusta.',
+                    'Preparando tudo para sua experiência.',
+                    'Estamos quase lá! Obrigado por esperar.'
+                ];
+                
+                const randomIndex = Math.floor(Math.random() * messages.length);
+                statusText.textContent = messages[randomIndex];
+            }
+        }
+
+        // Verifica o servidor a cada 1 segundo
+        function checkServerStatus() {
+            const interval = setInterval(() => {
+                checkReactServer().then(isServerUp => {
+                    if (isServerUp) {
+                        clearInterval(interval);
+                        // Redireciona para a URL do React quando o servidor estiver disponível
+                        window.location.href = 'http://localhost:3000';
+                    } else {
+                        updateStatusText(false);
+                    }
+                });
+            }, 3000); // A cada 1 segundo
+        }
+
+        checkServerStatus();
+    </script>
+</body>
+</html>

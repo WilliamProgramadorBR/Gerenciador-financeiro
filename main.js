@@ -4,19 +4,19 @@ const express = require('express');
 const cors = require('cors');
 const sqlite3 = require('sqlite3');
 const { open } = require('sqlite');
+const { exec } = require('child_process');
+const http = require('http');
 
 let mainWindow;
 let server;
-
-// Defina o caminho para o ícone PNG
+const REACT_URL = 'http://localhost:3000'; // URL da interface React
 const iconPath = path.join(__dirname, 'imgelectron', 'image.png');
 
-// Criar a janela do Electron
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
-    icon: iconPath, // Use o caminho do ícone aqui
+    icon: iconPath,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -24,11 +24,8 @@ function createWindow() {
     }
   });
 
-  if (process.env.NODE_ENV === 'development') {
-    mainWindow.loadFile(path.join(__dirname, 'public', 'index.html'));
-  } else {
-    mainWindow.loadURL('http://localhost:3000');
-  }
+  // Exibir a página de carregamento enquanto os servidores são iniciados
+  mainWindow.loadFile(path.join(__dirname, 'loading.html'));
 
   ipcMain.on('focus-main-window', () => {
     if (mainWindow) {
@@ -51,14 +48,12 @@ app.on('activate', () => {
   }
 });
 
-// Configurar e abrir o banco de dados
 async function setupDatabase() {
   const db = await open({
     filename: './database.db',
     driver: sqlite3.Database
   });
 
-  // Criar as tabelas
   await db.exec(`
     CREATE TABLE IF NOT EXISTS gastos (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -72,7 +67,6 @@ async function setupDatabase() {
   await db.exec(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-
       username TEXT NOT NULL,
       email TEXT NOT NULL UNIQUE,
       password TEXT NOT NULL
@@ -94,7 +88,6 @@ async function setupDatabase() {
   return db;
 }
 
-// Configurar o servidor Express
 async function startServer() {
   const app = express();
   const db = await setupDatabase();
@@ -242,26 +235,51 @@ app.post('/api/register', async (req, res) => {
   });
 }
 
-// Inicializar o Electron e o servidor
+function startReactServer() {
+  const projectRoot = path.join(__dirname); // Caminho para o diretório raiz do projeto
+
+  exec('npm start', { cwd: projectRoot }, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Erro ao executar o comando: ${error}`);
+      return;
+    }
+
+    console.log(`stdout: ${stdout}`);
+    console.error(`stderr: ${stderr}`);
+  });
+}
+
+async function checkServerStatus() {
+  const check = () => {
+    return new Promise((resolve) => {
+      http.get(REACT_URL, (res) => {
+        if (res.statusCode === 200) {
+          resolve(true);
+        } else {
+          console.log(`Status code recebido: ${res.statusCode}`);
+          resolve(false);
+        }
+      }).on('error', (err) => {
+        console.error(`Erro durante a requisição: ${err.message}`);
+        resolve(false);
+      });
+    });
+  };
+
+  while (true) {
+    const isServerUp = await check();
+    if (isServerUp) {
+      console.log('Servidor React iniciado com sucesso!');
+      mainWindow.loadURL(REACT_URL); // Carrega o URL da interface React
+      break;
+    }
+    console.log('Aguardando servidor React iniciar...');
+    await new Promise(resolve => setTimeout(resolve, 1000)); // Aguardar 1 segundo antes de verificar novamente
+  }
+}
+
 app.on('ready', async () => {
-  createWindow();
   await startServer();
-});
-
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
-});
-
-app.on('activate', () => {
-  if (mainWindow === null) {
-    createWindow();
-  }
-});
-
-// Comunicação entre processos
-ipcMain.on('toMain', (event, args) => {
-  console.log(args);
-  event.reply('fromMain', 'Pong');
+  startReactServer();
+  checkServerStatus(); // Verifica se o servidor React está rodando
 });
