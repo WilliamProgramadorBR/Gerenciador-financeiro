@@ -2,7 +2,10 @@
   "name": "financas-app",
   "version": "3.1.0",
   "description": "Aplicativo de gestão financeira",
-  "author": "William Oliveira",
+  "author": {
+    "name": "William Oliveira",
+    "email": "william100william@gmail.com"
+  },
   "main": "main.js",
   "private": true,
   "dependencies": {
@@ -34,16 +37,17 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "npx serve -s build",
     "start-react": "react-scripts start",
     "package": "electron-forge package",
     "make": "electron-forge make",
-    "build": "react-scripts build",
-    "dist": "npm run build && electron-builder"
+    "build": "react-scripts build"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.4.0",
+    "@electron-forge/maker-deb": "^7.4.0",
     "@electron-forge/maker-squirrel": "^7.4.0",
+    "@electron-forge/maker-zip": "^7.4.0",
     "@types/node": "^20.0.0",
     "@types/react-input-mask": "^3.0.5",
     "@types/react-router-dom": "^5.3.3",
@@ -53,32 +57,66 @@
     "electron-builder": "^24.13.3",
     "wait-on": "^5.3.0"
   },
+  "config": {
+    "forge": {
+      "packagerConfig": {
+        "icon": "imgelectron/image_K12_icon.ico"
+      },
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "name": "financas_app",
+            "iconUrl": "file://path/to/your/icon.ico",
+            "setupIcon": "imgelectron/image_K12_icon.ico"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": [
+            "darwin"
+          ]
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "config": {}
+        }
+      ]
+    }
+  },
   "build": {
     "appId": "com.financas.app",
-    "asar": true,
-    "win": {
-      "target": "nsis",
-      "icon": "imgelectron/image.png"
-    },
-    "mac": {
-      "target": "dmg",
-      "icon": "imgelectron/image.png"
-    },
-    "linux": {
-      "target": "AppImage",
-      "icon": "imgelectron/image.png"
+    "productName": "Finanças App",
+    "directories": {
+      "output": "dist"
     },
     "files": [
       "build/**/*",
       "main.js"
     ],
-    "extraResources": {
-      "from": "./assets/",
-      "to": "assets"
+    "win": {
+      "target": "nsis",
+      "icon": "imgelectron/image_K12_icon.ico"
     },
-    "productName": "App de finanças"
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "imgelectron/image_K12_icon.ico",
+      "uninstallerIcon": "imgelectron/image_K12_icon.ico",
+      "installerHeaderIcon": "imgelectron/image_K12_icon.ico",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "imgelectron/image_K12_icon.icns"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "imgelectron/image_K12_icon.png"
+    }
   },
-  "config": {},
   "eslintConfig": {
     "extends": [
       "react-app",
