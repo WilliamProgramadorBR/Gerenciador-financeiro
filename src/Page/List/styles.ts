@@ -4,6 +4,26 @@ export const Container = styled.div``;
 
 export const Content = styled.main``;
 
+
+export const PrintButton = styled.button`
+  background-color: #4E41F0;
+  color: #fff;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #372ecb;
+  }
+
+  display: block;
+  margin: 20px auto; /* Centraliza o botão horizontalmente */
+`;
+
+
 export const Filters = styled.div`
     width: 100%;
     

@@ -4,7 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carregando</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="loading.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+            text-align: center;
+        }
+        .loading-container {
+            margin-bottom: 20px;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #09f;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        #status-text {
+            margin-top: 10px;
+            font-size: 1.1em;
+        }
+        #honorable-mention, #requirements {
+            font-size: 0.9em;
+            color: #555;
+        }
+        #honorable-mention a, #requirements a {
+            color: #09f;
+            text-decoration: none;
+        }
+        #honorable-mention a:hover, #requirements a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
     <div class="loading-container">
@@ -14,54 +60,112 @@
     </div>
 
     <script>
-        // Função para verificar o status do servidor React
+        const backendMessages = [
+            'Carregando o banco de dados... 📊',
+            'Preparando as finanças... 💼',
+            'Conectando ao servidor... 🔗',
+            'Verificando dados... 🔍',
+            'Preparando a melhor experiência financeira para você... 💸',
+            'Sincronizando informações... 🔄',
+            'Preparando tudo para sua gestão financeira... 🧮',
+            'Estamos quase prontos... ⏳'
+        ];
+
+        const frontendMessages = [
+            'Inicializando o React... ⚛️',
+            'Carregando a interface... 🖥️',
+            'Preparando a visualização dos dados... 📊',
+            'Carregando componentes... 🧩',
+            'Ajustando os detalhes finais... 🎨',
+            'Em breve você verá o que preparamos... 🚀',
+            'Estamos quase lá! Obrigado por esperar... 😊',
+            'Finalizando a inicialização... 🔧'
+        ];
+
+        function showRandomMessage(messages) {
+            const statusText = document.getElementById('status-text');
+            const randomIndex = Math.floor(Math.random() * messages.length);
+            statusText.textContent = messages[randomIndex];
+        }
+
+        function checkBackendServer() {
+            return fetch('http://localhost:3008')
+                .then(response => response.ok)
+                .catch(() => false);
+        }
+
         function checkReactServer() {
             return fetch('http://localhost:3000')
                 .then(response => response.ok)
                 .catch(() => false);
         }
 
-        // Atualiza o texto com base no status do servidor
-        function updateStatusText(status) {
-            const statusText = document.getElementById('status-text');
-            if (status) {
-                statusText.textContent = 'O servidor React está funcionando!';
+        function checkBackendStatus() {
+            return new Promise((resolve) => {
+                let attempts = 0;
+                const interval = setInterval(() => {
+                    showRandomMessage(backendMessages);
+                    checkBackendServer().then(isServerUp => {
+                        if (isServerUp || attempts >= 180) { // Espera de até 180 segundos (3 minutos)
+                            clearInterval(interval);
+                            resolve(isServerUp);
+                        }
+                        attempts++;
+                    });
+                }, 1000); 
+            });
+        }
+
+        function checkFrontendStatus() {
+            return new Promise((resolve) => {
+                let attempts = 0;
+                const interval = setInterval(() => {
+                    showRandomMessage(frontendMessages);
+                    checkReactServer().then(isServerUp => {
+                        if (isServerUp || attempts >= 8) {
+                            clearInterval(interval);
+                            resolve(isServerUp);
+                        }
+                        attempts++;
+                    });
+                }, 1000);
+            });
+        }
+
+        async function checkServerStatus() {
+            const backendReady = await checkBackendStatus();
+            if (backendReady) {
+                const frontendReady = await checkFrontendStatus();
+                if (frontendReady) {
+                    window.location.href = 'http://localhost:3000';
+                } else {
+                    showRandomMessage(['Ocorreu um problema ao iniciar a interface. 😥']);
+                }
             } else {
-                // Texto dinâmico durante o carregamento
-                const messages = [
-                    'Aguardando enquanto preparamos tudo para você.',
-                    'Quase lá, estamos quase prontos!',
-                    'Só um momento, estamos ajustando tudo.',
-                    'Por favor, aguarde enquanto o React está iniciando.',
-                    'Estamos preparando a melhor experiência para você!',
-                    'Carregando... em breve você verá o que preparamos.',
-                    'Estamos dando os toques finais.',
-                    'Aguarde um pouco mais enquanto tudo se ajusta.',
-                    'Preparando tudo para sua experiência.',
-                    'Estamos quase lá! Obrigado por esperar.'
-                ];
-                
-                const randomIndex = Math.floor(Math.random() * messages.length);
-                statusText.textContent = messages[randomIndex];
+                showRandomMessage(['Não foi possível conectar ao servidor. Por favor, tente novamente mais tarde. 😥']);
             }
         }
 
-        // Verifica o servidor a cada 1 segundo
-        function checkServerStatus() {
-            const interval = setInterval(() => {
-                checkReactServer().then(isServerUp => {
-                    if (isServerUp) {
-                        clearInterval(interval);
-                        // Redireciona para a URL do React quando o servidor estiver disponível
-                        window.location.href = 'http://localhost:3000';
-                    } else {
-                        updateStatusText(false);
-                    }
-                });
-            }, 3000); // A cada 1 segundo
+        function showRequirements() {
+            setTimeout(() => {
+                document.getElementById('requirements').style.display = 'block';
+            }, 60000); 
         }
 
         checkServerStatus();
+        showRequirements();
     </script>
+
+    <div id="honorable-mention">
+        <p>Desenvolvido por <strong>William</strong></p>
+        <p>Contato: <a href="mailto:william100william@gmail.com">william100william@gmail.com</a> | WhatsApp: <a href="https://wa.me/5521977150144">Meu WhatsApp</a></p>
+        <p>GitHub: <a href="https://github.com/WilliamProgramadorBR" target="_blank">https://github.com/WilliamProgramadorBR</a></p>
+    </div>
+
+    <div id="requirements" style="display: none;">
+        <p>⚠️ Parece que a aplicação está demorando mais do que o esperado para carregar...</p>
+        <p>🔧 Por favor, certifique-se de que você tem <a href="https://nodejs.org" target="_blank">Node.js</a> e <a href="https://www.npmjs.com/" target="_blank">npm</a> instalados em sua máquina, pois são requisitos mínimos para rodar esta aplicação.</p>
+    </div>
+
 </body>
 </html>

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Container, Content, Button, Filters } from './styles';
+import { Container, Content, Button, Filters, PrintButton} from './styles';
 import { v4 as uuid } from 'uuid';
 import { useParams } from 'react-router-dom';
 
@@ -148,65 +148,76 @@ const List: React.FC = () => {
 
   const itemsToShow = showAll ? data : data.slice(0, 5);
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
     <Container>
-      <ContentHeader title={pageData.title} lineColor={pageData.lineColor}>
-        <SelectInput
-          options={months}
-          onChange={e => handleMonthSelected(e.target.value)}
-          defaultValue={monthSelected}
-        />
-        <SelectInput
-          options={years}
-          onChange={e => handleYearSelected(e.target.value)}
-          defaultValue={yearSelected}
-        />
-      </ContentHeader>
-
-      <Filters>
-        <button
-          type="button"
-          className={`
-            tag-filter 
-            tag-filter-recurrent
-            ${frequencyFilterSelected.includes('recorrente') && 'tag-actived'}`}
-          onClick={() => handleFrequencyClick('recorrente')}
-        >
-          Recorrentes
-        </button>
-
-        <button
-          type="button"
-          className={`
-            tag-filter 
-            tag-filter-eventual
-            ${frequencyFilterSelected.includes('eventual') && 'tag-actived'}`}
-          onClick={() => handleFrequencyClick('eventual')}
-        >
-          Eventuais
-        </button>
-      </Filters>
-
-      <Content>
-        <ul style={{ overflowY: 'visible' }}>
-          {itemsToShow.map(item => (
-            <HistoryFinanceCard
-              key={item.id}
-              tagColor={item.tagColor}
-              title={item.description}
-              subtitle={item.dateFormatted}
-              amount={item.amountFormatted}
-            />
-          ))}
-        </ul>
-        {data.length > 5 && !showAll && (
-          <Button onClick={() => setShowAll(true)}>Mostrar Mais</Button>
-        )}
-        {showAll && (
-          <Button onClick={() => setShowAll(false)}>Mostrar Menos</Button>
-        )}
-      </Content>
-    </Container>
+    <ContentHeader title={pageData.title} lineColor={pageData.lineColor}>
+      <SelectInput
+        options={months}
+        onChange={e => handleMonthSelected(e.target.value)}
+        defaultValue={monthSelected}
+      />
+      <SelectInput
+        options={years}
+        onChange={e => handleYearSelected(e.target.value)}
+        defaultValue={yearSelected}
+      />
+    </ContentHeader>
+  
+    {/* Botão de Imprimir */}
+    <PrintButton onClick={() => window.print()}>Imprimir</PrintButton>
+  
+    <Filters>
+      {/* Botões de Filtro */}
+      <button
+        type="button"
+        className={`
+          tag-filter 
+          tag-filter-recurrent
+          ${frequencyFilterSelected.includes('recorrente') && 'tag-actived'}`}
+        onClick={() => handleFrequencyClick('recorrente')}
+      >
+        Recorrentes
+      </button>
+  
+      <button
+        type="button"
+        className={`
+          tag-filter 
+          tag-filter-eventual
+          ${frequencyFilterSelected.includes('eventual') && 'tag-actived'}`}
+        onClick={() => handleFrequencyClick('eventual')}
+      >
+        Eventuais
+      </button>
+    </Filters>
+  
+    {/* Conteúdo */}
+    <Content>
+      <ul style={{ overflowY: 'visible' }}>
+        {itemsToShow.map(item => (
+          <HistoryFinanceCard
+            key={item.id}
+            tagColor={item.tagColor}
+            title={item.description}
+            subtitle={item.dateFormatted}
+            amount={item.amountFormatted}
+          />
+        ))}
+      </ul>
+      {data.length > 5 && !showAll && (
+        <Button onClick={() => setShowAll(true)}>Mostrar Mais</Button>
+      )}
+      {showAll && (
+        <Button onClick={() => setShowAll(false)}>Mostrar Menos</Button>
+      )}
+    </Content>
+  </Container>
+  
+  
   );
 };
 
