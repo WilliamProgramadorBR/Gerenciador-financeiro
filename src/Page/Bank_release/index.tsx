@@ -12,6 +12,7 @@ import {
     ErrorMessage
 } from './styles';
 import { NumericFormat } from 'react-number-format'; // Importando o NumericFormat
+import Alert from '../../components/Alert'; // Importando o componente Alert
 
 interface FormData {
     description: string;
@@ -30,6 +31,7 @@ const FormPage: React.FC = () => {
         date: ''
     });
     const [error, setError] = useState<string | null>(null);
+    const [showSuccessAlert, setShowSuccessAlert] = useState(false); // Estado para mostrar alerta de sucesso
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -53,7 +55,7 @@ const FormPage: React.FC = () => {
                 throw new Error('Failed to submit data');
             }
             // Handle successful submission
-            alert('Data submitted successfully!');
+            setShowSuccessAlert(true); // Mostrar alerta de sucesso
             setFormData({
                 description: '',
                 amount: 0,
@@ -134,7 +136,24 @@ const FormPage: React.FC = () => {
                 </FormGroup>
                 <Button type="submit">Adicionar</Button>
             </Form>
-            {error && <ErrorMessage>{error}</ErrorMessage>}
+
+            {/* Alerta de sucesso */}
+            {showSuccessAlert && (
+                <Alert
+                    message="Data submitted successfully!"
+                    type="success"
+                    onClose={() => setShowSuccessAlert(false)}
+                />
+            )}
+
+            {/* Alerta de erro */}
+            {error && (
+                <Alert
+                    message={error}
+                    type="error"
+                    onClose={() => setError(null)}
+                />
+            )}
         </Container>
     );
 };

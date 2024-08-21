@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import Alert from '../components/Alert'; // Certifique-se de ajustar o caminho para o seu componente Alert
 
 interface IUser {
   id: number;
@@ -23,6 +24,8 @@ const AuthContext = createContext<IAuthContext | undefined>(undefined);
 const AuthProvider: React.FC<IAuthProviderProps> = ({ children }) => {
   const [logged, setLogged] = useState<boolean>(false);
   const [user, setUser] = useState<IUser | null>(null);
+  const [alertMessage, setAlertMessage] = useState<string | null>(null);
+  const [alertType, setAlertType] = useState<'success' | 'error' | null>(null);
 
   useEffect(() => {
     const isLogged = localStorage.getItem('@minha-carteira:logged');
@@ -46,14 +49,18 @@ const AuthProvider: React.FC<IAuthProviderProps> = ({ children }) => {
         localStorage.setItem('@minha-carteira:logged', 'true');
         localStorage.setItem('@minha-carteira:user', JSON.stringify(data.user));
         setLogged(true);
-        setUser(data);
+        setUser(data.user);
+        setAlertMessage('Login realizado com sucesso!');
+        setAlertType('success');
         window.location.href = '/dashboard'; // Redireciona após login
       } else {
-        alert('Senha ou usuário inválidos!');
+        setAlertMessage('Senha ou usuário inválidos!');
+        setAlertType('error');
       }
     } catch (error) {
       console.error('Erro ao fazer login:', error);
-      alert('Erro ao fazer login. Tente novamente.');
+      setAlertMessage('Erro ao fazer login. Tente novamente.');
+      setAlertType('error');
     }
   }
 
@@ -62,11 +69,23 @@ const AuthProvider: React.FC<IAuthProviderProps> = ({ children }) => {
     localStorage.removeItem('@minha-carteira:user');
     setLogged(false);
     setUser(null);
+    setAlertMessage('Logout realizado com sucesso!');
+    setAlertType('success');
     window.location.href = '/'; // Redireciona após logout
   }
 
   return (
     <AuthContext.Provider value={{ logged, user, signIn, signOut }}>
+      {alertMessage && (
+        <Alert
+          message={alertMessage}
+          type={alertType as 'success' | 'error'}
+          onClose={() => {
+            setAlertMessage(null);
+            setAlertType(null);
+          }}
+        />
+      )}
       {children}
     </AuthContext.Provider>
   );

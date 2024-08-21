@@ -5,9 +5,9 @@ import { fetchTransactions } from '../../repositories/api'; // Atualize o caminh
 import { Transaction } from '../../repositories/types'; // Ajuste o caminho conforme necessário
 import { Container, Title, Button, FormGroup, Label, Input, Select, CardText, TitleText } from './styles'; // Atualize o caminho conforme necessário
 import { Link } from 'react-router-dom';
+import Alert from '../../components/Alert';
 
 const TransactionsPage: React.FC = () => {
-  
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [editTransaction, setEditTransaction] = useState<Transaction | null>(null);
     const [description, setDescription] = useState('');
@@ -15,6 +15,8 @@ const TransactionsPage: React.FC = () => {
     const [type, setType] = useState<'entrada' | 'saída'>('saída');
     const [frequency, setFrequency] = useState<'recorrente' | 'eventual'>('eventual');
     const [date, setDate] = useState('');
+    const [alertMessage, setAlertMessage] = useState(''); // Estado para a mensagem do alerta
+    const [showAlert, setShowAlert] = useState(false); // Estado para controlar a exibição do alerta
 
     useEffect(() => {
         const loadTransactions = async () => {
@@ -22,7 +24,8 @@ const TransactionsPage: React.FC = () => {
                 const { gains, expenses } = await fetchTransactions();
                 setTransactions([...gains, ...expenses]);
             } catch (error) {
-                console.error('Error fetching transactions:', error);
+                setAlertMessage('Erro ao buscar transações.');
+                setShowAlert(true);
             }
         };
 
@@ -44,11 +47,15 @@ const TransactionsPage: React.FC = () => {
                         transaction.id === editTransaction.id ? { ...transaction, description, amount, type, frequency, date } : transaction
                     ));
                     setEditTransaction(null);
+                    setAlertMessage('Transação atualizada com sucesso!');
+                    setShowAlert(true);
                 } else {
-                    console.error('Failed to update transaction');
+                    setAlertMessage('Falha ao atualizar transação.');
+                    setShowAlert(true);
                 }
             } catch (error) {
-                console.error('Error updating transaction:', error);
+                setAlertMessage('Erro ao atualizar transação.');
+                setShowAlert(true);
             }
         }
     };
@@ -60,17 +67,31 @@ const TransactionsPage: React.FC = () => {
             });
             if (response.ok) {
                 setTransactions(transactions.filter(transaction => transaction.id !== id));
+                setAlertMessage('Transação excluída com sucesso!');
+                setShowAlert(true);
             } else {
-                console.error('Failed to delete transaction');
+                setAlertMessage('Falha ao excluir transação.');
+                setShowAlert(true);
             }
         } catch (error) {
-            console.error('Error deleting transaction:', error);
+            setAlertMessage('Erro ao excluir transação.');
+            setShowAlert(true);
         }
     };
 
     return (
         <Container>
             <Title>Controle suas transações</Title>
+
+            {showAlert && (
+  <Alert
+    message={alertMessage}
+    onClose={() => setShowAlert(false)}
+    type="success" // ou "error", "info", etc., dependendo do que você deseja exibir
+  />
+)}
+
+
             {transactions.map(transaction => (
                 <div key={transaction.id} style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: '#f9f9f9', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
                     <TitleText>{transaction.description}</TitleText>
@@ -98,25 +119,22 @@ const TransactionsPage: React.FC = () => {
                         />
                     </FormGroup>
                     <FormGroup>
-                    <Label><CardText>Valor</CardText></Label>
-<NumericFormat
-    value={amount}
-    onValueChange={(values) => setAmount(values.floatValue || 0)}
-    thousandSeparator="."
-    decimalSeparator=","
-    prefix="R$ "
-    displayType="input"
-    style={{
-        width: '100%', // Define a largura total do campo
-        padding: '10px', // Ajusta o preenchimento interno do campo
-        fontSize: '16px', // Define o tamanho da fonte
-        borderRadius: '8px', // Arredonda os cantos
-        border: '1px solid #ccc' // Define uma borda
-    }}
-/>
-
-
-
+                        <Label><CardText>Valor</CardText></Label>
+                        <NumericFormat
+                            value={amount}
+                            onValueChange={(values) => setAmount(values.floatValue || 0)}
+                            thousandSeparator="."
+                            decimalSeparator=","
+                            prefix="R$ "
+                            displayType="input"
+                            style={{
+                                width: '100%', // Define a largura total do campo
+                                padding: '10px', // Ajusta o preenchimento interno do campo
+                                fontSize: '16px', // Define o tamanho da fonte
+                                borderRadius: '8px', // Arredonda os cantos
+                                border: '1px solid #ccc' // Define uma borda
+                            }}
+                        />
                     </FormGroup>
                     <FormGroup>
                         <Label><CardText>Tipo</CardText></Label>
@@ -129,7 +147,7 @@ const TransactionsPage: React.FC = () => {
                         </Select>
                     </FormGroup>
                     <FormGroup>
-                        <Label><CardText>Frequencia</CardText></Label>
+                        <Label><CardText>Frequência</CardText></Label>
                         <Select
                             value={frequency}
                             onChange={e => setFrequency(e.target.value as 'recorrente' | 'eventual')}
@@ -146,14 +164,15 @@ const TransactionsPage: React.FC = () => {
                             onChange={e => setDate(e.target.value)}
                         />
                     </FormGroup>
-                    <Button onClick={handleUpdate}>Salva edição</Button>
+                    <Button onClick={handleUpdate}>Salvar edição</Button>
                 </div>
             )}
-               <Link to="/register">
-      <Button>Inserir nova transação</Button>
-    </Link>
+            <Link to="/register">
+                <Button>Inserir nova transação</Button>
+            </Link>
         </Container>
     );
 };
 
 export default TransactionsPage;
+
