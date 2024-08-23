@@ -8,6 +8,8 @@ import ExpensesPage from '../Page/Register_bank'
 import { useAuth } from '../hooks/auth';
 import Layout from '../components/Layout';
 import SignUp from '../Page/SignUp';
+import FinancialReport from '../Page/Financial_Report';
+import EmailSettings from '../Page/Notifications';
 
 
 const ProtectedRoute: React.FC<{ element: React.ReactElement }> = ({ element }) => {
@@ -23,6 +25,8 @@ const AppRoutes: React.FC = () => (
     <Route path="/register" element={<ProtectedRoute element={<Layout><FormPage /></Layout>} />} />
     <Route path="/list_register" element={<ProtectedRoute element={<Layout><ExpensesPage /></Layout>} />} />
     <Route path="/list/:type" element={<ProtectedRoute element={<Layout><List /></Layout>} />} />
+    <Route path="/report" element={<ProtectedRoute element={<Layout><FinancialReport /></Layout>} />} />
+    <Route path="/settings" element={<ProtectedRoute element={<Layout>< EmailSettings/></Layout>} />} />
     <Route path="*" element={<h1>Page Not Found</h1>} /> {/* Fallback para rotas não definidas */}
   </Routes>
 );

@@ -3,7 +3,7 @@ import { NumericFormat } from 'react-number-format';
 
 import { fetchTransactions } from '../../repositories/api'; // Atualize o caminho conforme necessário
 import { Transaction } from '../../repositories/types'; // Ajuste o caminho conforme necessário
-import { Container, Title, Button, FormGroup, Label, Input, Select, CardText, TitleText } from './styles'; // Atualize o caminho conforme necessário
+import { Container, Title, Button, FormGroup, Label, Input, Select, CardText, TitleText, EditTransactionContainer, SaveButton, EditTitle, TransactionCard } from './styles'; // Atualize o caminho conforme necessário
 import { Link } from 'react-router-dom';
 import Alert from '../../components/Alert';
 
@@ -93,7 +93,7 @@ const TransactionsPage: React.FC = () => {
 
 
             {transactions.map(transaction => (
-                <div key={transaction.id} style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: '#f9f9f9', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
+                <TransactionCard key={transaction.id}>
                     <TitleText>{transaction.description}</TitleText>
                     <CardText>Valor: {transaction.amount}</CardText>
                     <CardText>Data: {new Date(transaction.date).toLocaleDateString()}</CardText>
@@ -106,67 +106,68 @@ const TransactionsPage: React.FC = () => {
                         setDate(typeof transaction.date === 'string' ? transaction.date : (transaction.date instanceof Date ? transaction.date.toISOString().split('T')[0] : ''));
                     }}>Edit</Button>
                     <Button onClick={() => handleDelete(transaction.id)}>Delete</Button>
-                </div>
+                </TransactionCard>
             ))}
-            {editTransaction && (
-                <div style={{ marginTop: '2rem', padding: '2rem', backgroundColor: '#020202', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
-                    <Title>Edit Transaction</Title>
-                    <FormGroup>
-                        <Label><CardText>Descrição</CardText></Label>
-                        <Input
-                            value={description}
-                            onChange={e => setDescription(e.target.value)}
-                        />
-                    </FormGroup>
-                    <FormGroup>
-                        <Label><CardText>Valor</CardText></Label>
-                        <NumericFormat
-                            value={amount}
-                            onValueChange={(values) => setAmount(values.floatValue || 0)}
-                            thousandSeparator="."
-                            decimalSeparator=","
-                            prefix="R$ "
-                            displayType="input"
-                            style={{
-                                width: '100%', // Define a largura total do campo
-                                padding: '10px', // Ajusta o preenchimento interno do campo
-                                fontSize: '16px', // Define o tamanho da fonte
-                                borderRadius: '8px', // Arredonda os cantos
-                                border: '1px solid #ccc' // Define uma borda
-                            }}
-                        />
-                    </FormGroup>
-                    <FormGroup>
-                        <Label><CardText>Tipo</CardText></Label>
-                        <Select
-                            value={type}
-                            onChange={e => setType(e.target.value as 'entrada' | 'saída')}
-                        >
-                            <option value="entrada">Entrada</option>
-                            <option value="saída">Saída</option>
-                        </Select>
-                    </FormGroup>
-                    <FormGroup>
-                        <Label><CardText>Frequência</CardText></Label>
-                        <Select
-                            value={frequency}
-                            onChange={e => setFrequency(e.target.value as 'recorrente' | 'eventual')}
-                        >
-                            <option value="recorrente">Recorrente</option>
-                            <option value="eventual">Eventual</option>
-                        </Select>
-                    </FormGroup>
-                    <FormGroup>
-                        <Label><CardText>Data</CardText></Label>
-                        <Input
-                            type="date"
-                            value={date}
-                            onChange={e => setDate(e.target.value)}
-                        />
-                    </FormGroup>
-                    <Button onClick={handleUpdate}>Salvar edição</Button>
-                </div>
-            )}
+           {editTransaction && (
+    <EditTransactionContainer>
+        <EditTitle>Edit Transaction</EditTitle>
+        <FormGroup>
+            <Label><CardText>Descrição</CardText></Label>
+            <Input
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+            />
+        </FormGroup>
+        <FormGroup>
+            <Label><CardText>Valor</CardText></Label>
+            <NumericFormat
+                value={amount}
+                onValueChange={(values) => setAmount(values.floatValue || 0)}
+                thousandSeparator="."
+                decimalSeparator=","
+                prefix="R$ "
+                displayType="input"
+                style={{
+                    width: '100%',
+                    padding: '10px',
+                    fontSize: '16px',
+                    borderRadius: '8px',
+                    border: '1px solid #ccc'
+                }}
+            />
+        </FormGroup>
+        <FormGroup>
+            <Label><CardText>Tipo</CardText></Label>
+            <Select
+                value={type}
+                onChange={e => setType(e.target.value as 'entrada' | 'saída')}
+            >
+                <option value="entrada">Entrada</option>
+                <option value="saída">Saída</option>
+            </Select>
+        </FormGroup>
+        <FormGroup>
+            <Label><CardText>Frequência</CardText></Label>
+            <Select
+                value={frequency}
+                onChange={e => setFrequency(e.target.value as 'recorrente' | 'eventual')}
+            >
+                <option value="recorrente">Recorrente</option>
+                <option value="eventual">Eventual</option>
+            </Select>
+        </FormGroup>
+        <FormGroup>
+            <Label><CardText>Data</CardText></Label>
+            <Input
+                type="date"
+                value={date}
+                onChange={e => setDate(e.target.value)}
+            />
+        </FormGroup>
+        <SaveButton onClick={handleUpdate}>Salvar edição</SaveButton>
+    </EditTransactionContainer>
+)}
+
             <Link to="/register">
                 <Button>Inserir nova transação</Button>
             </Link>

@@ -6,7 +6,7 @@ export const Container = styled.div`
     flex-direction: column;
     align-items: center;
     padding: 2rem;
-    background-color: ${props => props.theme.colors.success};
+    background-color: ${props => props.theme.colors.primary};
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     max-width: 600px;
@@ -15,7 +15,8 @@ export const Container = styled.div`
 
 export const Title = styled.h1`
     margin-bottom: 1.5rem;
-    color: ${props => props.theme.colors.primary};
+    margin-left: -50px;
+    color: ${props => props.theme.colors.white};
 `;
 
 export const Form = styled.form`

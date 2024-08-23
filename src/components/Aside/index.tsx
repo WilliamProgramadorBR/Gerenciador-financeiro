@@ -1,4 +1,5 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Toggle from '../Toggle';
 
 import {
@@ -9,7 +10,9 @@ import {
     MdClose,
     MdMenu,
     MdAdd,
-    MdEdit
+    MdEdit,
+    MdAssessment, // Ícone para Relatório
+    MdSettings // Novo ícone para Configurações
 } from 'react-icons/md';
 
 import logoImg from '../../assets/logo.svg';
@@ -27,32 +30,29 @@ import {
     MenuItemButton,
     ToggleMenu,
     ThemeToggleFooter,
-}  from './styles';
+} from './styles';
 
 const Aside: React.FC = () => {
     const { signOut } = useAuth();
     const { toggleTheme, theme } = useTheme();
 
-    const [toggleMenuIsOpened, setToggleMenuIsOpened ] = useState(false);
-    const [darkTheme, setDarkTheme] = useState(() => theme.title === 'dark' ? true : false);
-
+    const [toggleMenuIsOpened, setToggleMenuIsOpened] = useState(false);
+    const [darkTheme, setDarkTheme] = useState(() => theme.title === 'dark');
 
     const handleToggleMenu = () => {
         setToggleMenuIsOpened(!toggleMenuIsOpened);
     }
-
 
     const handleChangeTheme = () => {
         setDarkTheme(!darkTheme);
         toggleTheme();
     }
 
-
     return (
         <Container menuIsOpen={toggleMenuIsOpened}>
             <Header>
                 <ToggleMenu onClick={handleToggleMenu}>
-                { toggleMenuIsOpened ? <MdClose /> : <MdMenu /> }
+                    { toggleMenuIsOpened ? <MdClose /> : <MdMenu /> }
                 </ToggleMenu>
 
                 <LogImg src={logoImg} alt="Logo Minha Carteira" />
@@ -60,27 +60,38 @@ const Aside: React.FC = () => {
             </Header>
 
             <MenuContainer>
-                <MenuItemLink href="/dashboard">
-                
+                <MenuItemLink as={Link} to="/dashboard">
                     <MdDashboard />
                     Dashboard
                 </MenuItemLink>
 
-                <MenuItemLink href="/list/entry-balance">
+                <MenuItemLink as={Link} to="/list/entry-balance">
                     <MdArrowUpward />
                     Entradas
                 </MenuItemLink>
-                <MenuItemLink href="/list/exit-balance">
+                <MenuItemLink as={Link} to="/list/exit-balance">
                     <MdArrowDownward />
                     Saídas
                 </MenuItemLink>
-                <MenuItemLink href="/register">
+                <MenuItemLink as={Link} to="/register">
                     <MdAdd />
                     Registrar dados
                 </MenuItemLink>
-                <MenuItemLink href="/List_register">
+                <MenuItemLink as={Link} to="/list_register">
                     <MdEdit />
                     Editar registros
+                </MenuItemLink>
+
+                {/* Novo item de menu para o relatório */}
+                <MenuItemLink as={Link} to="/report" aria-label="Relatório">
+                    <MdAssessment />
+                    Relatório
+                </MenuItemLink>
+
+                {/* Novo item de menu para configurações */}
+                <MenuItemLink as={Link} to="/settings" aria-label="Configurações">
+                    <MdSettings />
+                    Configurações
                 </MenuItemLink>
 
                 <MenuItemButton onClick={signOut}>
