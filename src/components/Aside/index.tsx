@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Toggle from '../Toggle';
+import Clock from '../Clock'; // Importe o componente Clock
 
 import {
     MdDashboard,
@@ -11,8 +12,9 @@ import {
     MdMenu,
     MdAdd,
     MdEdit,
-    MdAssessment, // Ícone para Relatório
-    MdSettings // Novo ícone para Configurações
+    MdAssessment,
+    MdSettings,
+    MdAnnouncement
 } from 'react-icons/md';
 
 import logoImg from '../../assets/logo.svg';
@@ -82,13 +84,15 @@ const Aside: React.FC = () => {
                     Editar registros
                 </MenuItemLink>
 
-                {/* Novo item de menu para o relatório */}
                 <MenuItemLink as={Link} to="/report" aria-label="Relatório">
                     <MdAssessment />
                     Relatório
                 </MenuItemLink>
+                <MenuItemLink as={Link} to="/noticias" aria-label="Notícias">
+                    <MdAnnouncement />
+                    Notícias
+                </MenuItemLink>
 
-                {/* Novo item de menu para configurações */}
                 <MenuItemLink as={Link} to="/settings" aria-label="Configurações">
                     <MdSettings />
                     Configurações
@@ -99,6 +103,8 @@ const Aside: React.FC = () => {
                     Sair
                 </MenuItemButton>
             </MenuContainer>
+
+            <Clock /> {/* Adicione o componente Clock aqui */}
 
             <ThemeToggleFooter menuIsOpen={toggleMenuIsOpened}>
                 <Toggle

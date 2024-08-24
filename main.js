@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const path = require('node:path');
 const express = require('express');
 const cors = require('cors');
@@ -7,6 +7,8 @@ const { open } = require('sqlite');
 const { exec } = require('child_process');
 const http = require('http');
 const nodemailer = require('nodemailer');
+const axios = require('axios')
+const IBGE_NEWS_API_URL = 'http://servicodados.ibge.gov.br/api/v3/noticias/';
 
 
 let mainWindow;
@@ -18,37 +20,48 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
-    icon: iconPath,
+    icon: iconPath, // Atualize com o caminho correto para o ícone
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
-      nodeIntegration: false
+      nodeIntegration: false,
+      spellcheck: false, // Opcional, se você não precisar de verificação ortográfica
+      // Permitir comunicação entre o processo principal e o processo de renderização
+      contextIsolation: true,
+      enableRemoteModule: false,
     }
   });
 
-  // Exibir a página de carregamento enquanto os servidores são iniciados
+  // Exibir a página de carregamento
   mainWindow.loadFile(path.join(__dirname, 'loading.html'));
 
-  ipcMain.on('focus-main-window', () => {
-    if (mainWindow) {
-      mainWindow.focus();
-    }
+  // Quando a aplicação estiver pronta, escutar o evento do React para redirecionar
+  ipcMain.on('react-ready', () => {
+    mainWindow.loadURL('http://localhost:3000'); // Substitua com a URL correta
   });
-}//configuração de janela
 
-app.whenReady().then(createWindow);//função que chama a janela
+  // Interceptar a abertura de novos links
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      shell.openExternal(url);
+      return { action: 'deny' }; // Impede que o link seja aberto na janela do Electron
+    }
+    return { action: 'allow' }; // Permite a abertura na janela do Electron se não for um link externo
+  });
+}
+
+app.whenReady().then(createWindow);
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
-});//configuração encerramento de janela
+});
 
 app.on('activate', () => {
   if (mainWindow === null) {
     createWindow();
-  }
-});
+  }})
 
 
 
@@ -235,7 +248,14 @@ app.post('/api/register', async (req, res) => {
       res.status(500).json({ message: 'Erro ao salvar configurações.' });
     }
   });
-  
+  app.get('/api/noticias', async (req, res) => {
+    try {
+      const response = await axios.get(IBGE_NEWS_API_URL);
+      res.json(response.data);
+    } catch (error) {
+      console.error('Erro ao buscar dados da API:', error.response ? error.response.data : error.message);
+      res.status(500).send('Erro ao buscar dados da API');
+    }});
   
   // Rota para enviar relatórios por e-mail
   app.post('/api/send-report', async (req, res) => {
