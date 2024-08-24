@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, Menu } = require('electron');
 const path = require('node:path');
 const express = require('express');
 const cors = require('cors');
@@ -20,14 +20,12 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
-    icon: iconPath, // Atualize com o caminho correto para o ícone
+    icon: iconPath,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      spellcheck: false, // Opcional, se você não precisar de verificação ortográfica
-      // Permitir comunicação entre o processo principal e o processo de renderização
-      contextIsolation: true,
+      spellcheck: false,
       enableRemoteModule: false,
     }
   });
@@ -48,6 +46,27 @@ function createWindow() {
     }
     return { action: 'allow' }; // Permite a abertura na janela do Electron se não for um link externo
   });
+
+  // Adicionar o menu de desenvolvimento apenas em desenvolvimento
+  if (process.env.NODE_ENV === 'development') {
+    const menu = Menu.buildFromTemplate([
+      {
+        label: 'DevTools',
+        submenu: [
+          { role: 'reload' },
+          { role: 'toggleDevTools' }
+        ]
+      }
+    ]);
+    Menu.setApplicationMenu(menu);
+  } else {
+    Menu.setApplicationMenu(null); // Remove o menu da aplicação na produção
+  }
+
+  // Opcional: Esconder o menu de contexto
+  mainWindow.webContents.on('context-menu', (e) => {
+    e.preventDefault();
+  });
 }
 
 app.whenReady().then(createWindow);
@@ -61,8 +80,8 @@ app.on('window-all-closed', () => {
 app.on('activate', () => {
   if (mainWindow === null) {
     createWindow();
-  }})
-
+  }
+});
 
 
 // Tabelas sql
