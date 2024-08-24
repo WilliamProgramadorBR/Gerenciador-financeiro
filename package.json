@@ -1,6 +1,6 @@
 {
   "name": "financas-app",
-  "version": "5.01",
+  "version": "5.0.1",
   "description": "Aplicativo de gestão financeira",
   "author": {
     "name": "William Oliveira",
@@ -39,8 +39,8 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "start-react": "npx serve -s build",
+    "start": "npx serve -s build",
+    "start-react": "react-scripts start",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "build": "react-scripts build"
