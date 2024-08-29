@@ -3,7 +3,7 @@ const router = express.Router();
 const axios = require('axios');
 const nodemailer = require('nodemailer');
 const  setupDatabase  = require('../conexao_db/index');
-const { calculatePercentages, formatCurrency, categorizeData, generateMonthlyData } = require('../algoritmos/index'); // Importe a função que configura o banco de dados
+const { calculatePercentages, analyzeFinancialHealth } = require('../algoritmos/index'); // Importe a função que configura o banco de dados
 const IBGE_NEWS_API_URL = 'http://servicodados.ibge.gov.br/api/v3/noticias/'; // Defina a URL da API de notícias aqui
 
 // Login
@@ -88,6 +88,23 @@ router.get('/api/report', async (req, res) => {
       
       // Enviar o resultado como resposta
       res.json(result);
+    } catch (err) {
+      console.error('Erro ao buscar os dados do relatório:', err);
+      res.status(500).send('Erro ao buscar os dados do relatório');
+    }
+  });
+  router.get('/api/prevision', async (req, res) => {
+    try {
+      // Obter todos os registros da tabela
+      const db = await setupDatabase();
+      const records = await db.all('SELECT * FROM ganhos');
+    
+      // Separar ganhos e gastos
+      const ganhos = records.filter(record => record.type === 'entrada');
+      const gastos = records.filter(record => record.type === 'saída');
+    const relatorio = analyzeFinancialHealth(ganhos, gastos)
+  
+      res.json(relatorio);
     } catch (err) {
       console.error('Erro ao buscar os dados do relatório:', err);
       res.status(500).send('Erro ao buscar os dados do relatório');

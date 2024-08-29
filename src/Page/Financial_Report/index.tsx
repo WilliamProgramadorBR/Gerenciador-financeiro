@@ -5,7 +5,7 @@ import happyImg from '../../assets/happy.svg';
 import sadImg from '../../assets/sad.svg';
 import grinningImg from '../../assets/grinning.svg';
 import opsImg from '../../assets/ops.svg';
-import { ImageContainer, Image, Button } from './styles'; // Adicione Button ao import
+import { ImageContainer, Image, Button } from './styles';
 import Alert from '../../components/Alert';
 
 interface MonthlyData {
@@ -27,13 +27,33 @@ interface FinancialReportData {
     monthlyData: MonthlyData;
     tips: string;
   };
+  report: string;
 }
 
+interface AdditionalReportData {
+  currentBalance: number;
+  averageMonthlyGains: number;
+  averageMonthlyExpenses: number;
+  projectedBalance: number;
+  riskAnalysis: string;
+  tips: string[];
+  insights: {
+    totalGains: number;
+    totalExpenses: number;
+    recurringExpensesTotal: number;
+    eventualExpensesTotal: number;
+  },
+  trends:{
+    gains:number,
+    expenses: number
+  }
+}
 
 const FinancialReport: React.FC = () => {
   const [report, setReport] = useState<FinancialReportData | null>(null);
+  const [additionalReport, setAdditionalReport] = useState<AdditionalReportData | null>(null);
   const [alert, setAlert] = useState<{ message: string; type: 'success' | 'error' | 'info'; } | null>(null);
-  
+
   const saveEmailSettings = (settings: { sendDaily: boolean; sendDate?: string }) => {
     localStorage.setItem('emailSettings', JSON.stringify(settings));
   };
@@ -42,7 +62,6 @@ const FinancialReport: React.FC = () => {
     const settings = localStorage.getItem('emailSettings');
     return settings ? JSON.parse(settings) : { sendDaily: false };
   };
-  
 
   useEffect(() => {
     async function fetchReport() {
@@ -54,9 +73,19 @@ const FinancialReport: React.FC = () => {
       }
     }
 
-    fetchReport();
-  }, []);
+    async function fetchAdditionalReport() {
+      try {
+        const response = await axios.get<AdditionalReportData>('http://localhost:3008/api/prevision');
+        setAdditionalReport(response.data); // Atualize o tipo esperado aqui
+        console.log(response.data); // Para depuração
+      } catch (error) {
+        console.error('Erro ao buscar o relatório adicional', error);
+      }
+    }
 
+    fetchReport();
+    fetchAdditionalReport();
+  }, []);
 
   const isReportEmpty = (report: FinancialReportData | null) => {
     if (!report) return true;
@@ -82,23 +111,20 @@ const FinancialReport: React.FC = () => {
     );
   };
 
- 
-  
-
   const sendReportByEmail = async () => {
     if (!report) return;
-  
+
     const reportText = `
       Relatório Financeiro:
-      
+
       Ganhos Totais: ${(report.eventualGains + report.recurringGains).toFixed(2)}
       Gastos Totais: ${(report.eventualExpenses + report.recurringExpenses).toFixed(2)}
       Maior Gasto: ${report.highestExpense || 'Nenhuma descrição disponível.'} - R$${(report.highestExpenseAmount ?? 0).toFixed(2)}
       Percentual de Gastos Eventuais: ${(report.eventualExpenses ?? 0).toFixed(2)}
-      
+
       Dica Personalizada: ${report.tips || 'Nenhuma dica disponível.'}
     `;
-  
+
     try {
       await axios.post('http://localhost:3008/api/send-report', { reportText }, {
         headers: {
@@ -112,7 +138,7 @@ const FinancialReport: React.FC = () => {
     }
   };
 
-  if (!report) return <Loader />; // Mostrar animação de carregamento
+  if (!report) return <Loader />;
 
   if (isReportEmpty(report)) {
     return (
@@ -146,13 +172,12 @@ const FinancialReport: React.FC = () => {
         <Text>
           <strong>Ganhos Recorrentes:</strong> {(report.recurringGains ?? 0).toFixed(2)}%
         </Text>
-       
       </Section>
 
       <Section>
         <SectionTitle>Dica Personalizada</SectionTitle>
         <Text
-          dangerouslySetInnerHTML={{ __html: report.tips.replace(/\n/g, '<br />') || 'Nenhuma dica disponível.' }}
+          dangerouslySetInnerHTML={{ __html: report.tips?.replace(/\n/g, '<br />') || 'Nenhuma dica disponível.' }}
         />
       </Section>
 
@@ -188,21 +213,55 @@ const FinancialReport: React.FC = () => {
         )}
       </Section>
 
-      <Button onClick={sendReportByEmail}>Enviar Relatório por E-mail</Button>
+      <Section>
+        <SectionTitle>Relatório Completo</SectionTitle>
+        <Text>
+          <strong>Saldo Atual:</strong> R${additionalReport?.currentBalance.toFixed(2) || 'Nenhum dado'}
+        </Text>
+        <Text>
+          <strong>Média de Ganhos Mensais:</strong> R${additionalReport?.averageMonthlyGains.toFixed(2) || 'Nenhum dado'}
+        </Text>
+        <Text>
+          <strong>Média de Gastos Mensais:</strong> R${additionalReport?.averageMonthlyExpenses.toFixed(2) || 'Nenhum dado'}
+        </Text>
+        <Text>
+          <strong>Saldo Projetado:</strong> R${additionalReport?.projectedBalance.toFixed(2) || 'Nenhum dado'}
+        </Text>
+        <Text>
+          <strong>Análise de Risco:</strong> {additionalReport?.riskAnalysis || 'Nenhum dado'}
+        </Text>
+        <Text>
+          <strong>Ganhos previsões:</strong> {additionalReport?.trends.gains || 'Nenhuma dica disponível para ganhos,insira mais informações anuais para a geração'}
+          <br></br>
+          <br></br>
+         
+          <strong>Gastos previsões:</strong> {additionalReport?.trends.expenses || 'Sem previsões para gastos, insira mais informações anuais para a geração'}
+        </Text>
+        <Text>
+          <strong>Total de Ganhos:</strong> R${(additionalReport?.insights.totalGains ?? 0).toFixed(2)}
+        </Text>
+        <Text>
+          <strong>Total de Gastos:</strong> R${(additionalReport?.insights.totalExpenses ?? 0).toFixed(2)}
+        </Text>
+        <Text>
+          <strong>Gastos Recorrentes Totais:</strong> R${(additionalReport?.insights.recurringExpensesTotal ?? 0).toFixed(2)}
+        </Text>
+        <Text>
+          <strong>Gastos Eventuais Totais:</strong> R${(additionalReport?.insights.eventualExpensesTotal ?? 0).toFixed(2)}
+        </Text>
+      </Section>
+
+      <Button onClick={sendReportByEmail}>Enviar Relatório por Email</Button>
+
       {alert && (
         <Alert
-          message={alert.message}
-          type={alert.type}
-          onClose={() => {
-            setAlert(null);
-            setAlert(null);
-        }}
-         
-        />
+        message={alert.message}
+        type={alert.type}
+        onClose={() => setAlert(null)}
+      />
       )}
     </Container>
   );
 };
 
 export default FinancialReport;
-

@@ -104,7 +104,7 @@ const Aside: React.FC = () => {
                 </MenuItemButton>
             </MenuContainer>
 
-            <Clock /> {/* Adicione o componente Clock aqui */}
+            
 
             <ThemeToggleFooter menuIsOpen={toggleMenuIsOpened}>
                 <Toggle
