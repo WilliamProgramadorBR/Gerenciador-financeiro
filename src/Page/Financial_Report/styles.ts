@@ -1,9 +1,27 @@
 import styled, { keyframes } from 'styled-components';
 
 // Animação de carregamento
-const spin = keyframes`
+ const spin = keyframes`
   to { transform: rotate(360deg); }
 `;
+
+
+
+
+export const Card = styled.div`
+  padding: 20px;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+`;
+
+export const CardTitle = styled.h3`
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+`;
+
 
 // Componente Loader
 export const Loader = styled.div`

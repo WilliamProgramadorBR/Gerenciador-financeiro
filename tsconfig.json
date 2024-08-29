@@ -21,6 +21,6 @@
       "@/*": ["src/*"]
     }
   },
-  "include": ["src", "src/types", "preload.js", "main.js"], // Inclui a pasta de tipos
+  "include": ["src", "src/types", "preload.js", "main.js", "backend/rede_neurais"], // Inclui a pasta de tipos
   "exclude": ["node_modules", "dist"]
 }

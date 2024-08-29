@@ -276,7 +276,7 @@ function calculatePercentages(ganhos, gastos) {
     // Agrupar ganhos e despesas por mês
     const groupedGains = groupByMonth(ganhos);
     const groupedExpenses = groupByMonth(gastos);
-    console.log(groupedExpenses, groupedGains)
+
     // Análise de Tendências
     const gainsTrends = predictFutureTrend(groupedGains);
     const expensesTrends = predictFutureTrend(groupedExpenses);
@@ -315,110 +315,94 @@ function groupByMonth(data) {
         return acc;
     }, {});
 }
+
 function calculateQuantile(data, quantile) {
-  data.sort((a, b) => a - b);
-  const index = (quantile * (data.length - 1));
-  const lowerIndex = Math.floor(index);
-  const upperIndex = Math.ceil(index);
-  const weight = index - lowerIndex;
-  return (data[lowerIndex] * (1 - weight)) + (data[upperIndex] * weight);
+    data.sort((a, b) => a - b);
+    const index = (quantile * (data.length - 1));
+    const lowerIndex = Math.floor(index);
+    const upperIndex = Math.ceil(index);
+    const weight = index - lowerIndex;
+    return (data[lowerIndex] * (1 - weight)) + (data[upperIndex] * weight);
 }
+
 function predictFutureTrend(groupedData) {
-  const months = Object.keys(groupedData);
-  if (months.length < 6) {
-    return 'Dados insuficientes para previsão. É necessário ter pelo menos 6 meses de dados.';
-  }
+    const months = Object.keys(groupedData);
+    if (months.length < 6) {
+        return 'Dados insuficientes para previsão. É necessário ter pelo menos 6 meses de dados.';
+    }
 
-  // Pegue os últimos 6 meses para análise
-  const recentMonths = months.slice(-6);
-  const totals = recentMonths.map(month => 
-    groupedData[month].reduce((sum, item) => sum + item.amount, 0)
-  );
+    // Pegue os últimos 6 meses para análise
+    const recentMonths = months.slice(-6);
+    const totals = recentMonths.map(month => 
+        groupedData[month].reduce((sum, item) => sum + item.amount, 0)
+    );
 
-  // Detecção de outliers usando o intervalo interquartil (IQR)
-  const q1 = calculateQuantile(totals, 0.25);
-  const q3 = calculateQuantile(totals, 0.75);
-  const iqr = q3 - q1;
-  const filteredTotals = totals.filter(total => total >= (q1 - 1.5 * iqr) && total <= (q3 + 1.5 * iqr));
+    // Detecção de outliers usando o intervalo interquartil (IQR)
+    const q1 = calculateQuantile(totals, 0.25);
+    const q3 = calculateQuantile(totals, 0.75);
+    const iqr = q3 - q1;
+    const filteredTotals = totals.filter(total => total >= (q1 - 1.5 * iqr) && total <= (q3 + 1.5 * iqr));
 
-  // Regressão linear simples
-  const x = filteredTotals.map((_, i) => i + 1);
-  const y = filteredTotals;
+    // Regressão múltipla usando regressão polinomial (grau 2)
+    const X = filteredTotals.map((_, i) => [1, i + 1, Math.pow(i + 1, 2)]); // Matriz de características
+    const Y = filteredTotals;
 
-  const n = x.length;
-  const sumX = x.reduce((a, b) => a + b, 0);
-  const sumY = y.reduce((a, b) => a + b, 0);
-  const sumXY = x.reduce((sum, xi, i) => sum + xi * y[i], 0);
-  const sumX2 = x.reduce((sum, xi) => sum + xi * xi, 0);
+    // Calcule os coeficientes da regressão
+    const coefficients = polynomialRegression(X, Y, 2);
 
-  const b = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
-  const a = (sumY - b * sumX) / n;
+    // Previsão para o próximo mês usando os coeficientes da regressão múltipla
+    const nextMonth = filteredTotals.length + 1;
+    const futurePredictionMultiple = coefficients.reduce((sum, coef, index) => sum + coef * Math.pow(nextMonth, index), 0);
 
-  // Regressão polinomial (grau 2) usando math.js
-  const polyDegree = 2;
-  const X_poly = x.map(xi => [1, xi, xi**2]);
-  const Y_poly = y;
-  const coef = polynomialRegression(X_poly, Y_poly, polyDegree);
-
-  // Previsão para o próximo mês
-  const nextMonth = n + 1;
-  const futurePredictionLinear = a + b * nextMonth;
-  const futurePredictionPoly = coef.reduce((sum, c, i) => sum + c * nextMonth**i, 0);
-
-  return {
-    lastMonthTotal: totals[totals.length - 1],
-    secondLastMonthTotal: totals[totals.length - 2],
-    futurePredictionLinear,
-    futurePredictionPoly
-  };
+    return {
+        lastMonthTotal: filteredTotals[filteredTotals.length - 1],
+        secondLastMonthTotal: filteredTotals[filteredTotals.length - 2],
+        futurePredictionMultiple,
+    };
 }
 
 function polynomialRegression(X, Y, degree) {
-  const X_transpose = math.transpose(X);
-  const XtX = math.multiply(X_transpose, X);
-  const XtY = math.multiply(X_transpose, Y);
-  const coeffs = math.lusolve(XtX, XtY);
-  return coeffs.map(c => c[0]);
+    const X_transpose = math.transpose(X);
+    const XtX = math.multiply(X_transpose, X);
+    const XtY = math.multiply(X_transpose, Y);
+    const coeffs = math.lusolve(XtX, XtY);
+    return coeffs.map(c => c[0]);
 }
 
-
-
-
 function analyzeTrends(trendData, totalCurrent, averageMonthly, type) {
-  console.log('Trend Data:', trendData);
+    console.log('Trend Data:', trendData);
 
-  if (typeof trendData === 'string') {
-    return `Não há dados suficientes para prever a tendência de ${type}. É necessário ter pelo menos 6 meses de dados para uma análise precisa.`;
-  }
+    if (typeof trendData === 'string') {
+        return `Não há dados suficientes para prever a tendência de ${type}. É necessário ter pelo menos 6 meses de dados para uma análise precisa.`;
+    }
 
-  // Verificar se os dados são válidos
-  const { lastMonthTotal, futurePredictionLinear, futurePredictionPoly } = trendData;
-  if (isNaN(lastMonthTotal) || isNaN(futurePredictionLinear) || isNaN(futurePredictionPoly)) {
-    return `Dados insuficientes ou inválidos para calcular a previsão de ${type}.`;
-  }
+    // Verificar se os dados são válidos
+    const { lastMonthTotal, futurePredictionMultiple } = trendData;
+    if (isNaN(lastMonthTotal) || isNaN(futurePredictionMultiple)) {
+        return `Dados insuficientes ou inválidos para calcular a previsão de ${type}.`;
+    }
 
-  // Logs para depuração
-  console.log(`Último total registrado: R$${lastMonthTotal.toFixed(2)}`);
-  console.log(`Previsão linear para o próximo mês: R$${futurePredictionLinear.toFixed(2)}`);
-  console.log(`Previsão polinomial para o próximo mês: R$${futurePredictionPoly.toFixed(2)}`);
+    // Logs para depuração
+    console.log(`Último total registrado: R$${lastMonthTotal.toFixed(2)}`);
+    console.log(`Previsão múltipla para o próximo mês: R$${futurePredictionMultiple.toFixed(2)}`);
 
-  let message = '';
+    let message = '';
 
-  // Análise das tendências
-  if (futurePredictionLinear > lastMonthTotal) {
-    message = `Baseado nas tendências atuais, o total de ${type} está previsto para aumentar. A previsão linear para o próximo mês é de R$${futurePredictionLinear.toFixed(2)}, e a previsão polinomial indica um total de R$${futurePredictionPoly.toFixed(2)}. Se esta tendência continuar, o ${type} pode seguir crescendo.`;
-  } else if (futurePredictionLinear < lastMonthTotal) {
-    message = `As tendências atuais sugerem uma possível diminuição no total de ${type}. A previsão linear para o próximo mês é de R$${futurePredictionLinear.toFixed(2)}, enquanto a previsão polinomial é de R$${futurePredictionPoly.toFixed(2)}. Isso indica que pode haver uma redução no ${type} nos próximos meses.`;
-  } else {
-    message = `Com base nas tendências atuais, o total de ${type} deve permanecer estável. A previsão linear para o próximo mês é de R$${futurePredictionLinear.toFixed(2)}, e a previsão polinomial sugere um total de R$${futurePredictionPoly.toFixed(2)}. Portanto, o ${type} deve se manter constante se as condições atuais persistirem.`;
-  }
+    // Análise das tendências com base na previsão múltipla
+    if (futurePredictionMultiple > lastMonthTotal) {
+        message = `Baseado nas tendências atuais, o total de ${type} está previsto para aumentar. A previsão múltipla para o próximo mês é de R$${futurePredictionMultiple.toFixed(2)}. Se esta tendência continuar, o ${type} pode seguir crescendo.`;
+    } else if (futurePredictionMultiple < lastMonthTotal) {
+        message = `As tendências atuais sugerem uma possível diminuição no total de ${type}. A previsão múltipla para o próximo mês é de R$${futurePredictionMultiple.toFixed(2)}. Isso indica que pode haver uma redução no ${type} nos próximos meses.`;
+    } else {
+        message = `Com base nas tendências atuais, o total de ${type} deve permanecer estável. A previsão múltipla para o próximo mês é de R$${futurePredictionMultiple.toFixed(2)}. Portanto, o ${type} deve se manter constante se as condições atuais persistirem.`;
+    }
 
-  // Integração dos parâmetros totalCurrent e averageMonthly se fornecidos
-  if (totalCurrent !== undefined && averageMonthly !== undefined) {
-    message += ` Atualmente, o total de ${type} é de R$${totalCurrent.toFixed(2)} e a média mensal é de R$${averageMonthly.toFixed(2)}. Isso fornece um contexto adicional para interpretar as previsões.`;
-  }
+    // Integração dos parâmetros totalCurrent e averageMonthly se fornecidos
+    if (totalCurrent !== undefined && averageMonthly !== undefined) {
+        message += ` Atualmente, o total de ${type} é de R$${totalCurrent.toFixed(2)} e a média mensal é de R$${averageMonthly.toFixed(2)}. Isso fornece um contexto adicional para interpretar as previsões.`;
+    }
 
-  return message;
+    return message;
 }
 
 

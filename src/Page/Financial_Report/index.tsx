@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Container, Title, Section, SectionTitle, Text, Loader } from './styles';
-import happyImg from '../../assets/happy.svg';
-import sadImg from '../../assets/sad.svg';
-import grinningImg from '../../assets/grinning.svg';
+import { Container, Title, Section, SectionTitle, Text, Loader,Card, CardTitle } from './styles';
 import opsImg from '../../assets/ops.svg';
 import { ImageContainer, Image, Button } from './styles';
 import Alert from '../../components/Alert';
+
+
 
 interface MonthlyData {
   [period: string]: {
@@ -214,7 +213,11 @@ const FinancialReport: React.FC = () => {
       </Section>
 
       <Section>
-        <SectionTitle>Relatório Completo</SectionTitle>
+      <SectionTitle>Relatório Completo</SectionTitle>
+
+      {/* Card do Saldo e Médias */}
+      <Card>
+        <CardTitle>Resumo Financeiro</CardTitle>
         <Text>
           <strong>Saldo Atual:</strong> R${additionalReport?.currentBalance.toFixed(2) || 'Nenhum dado'}
         </Text>
@@ -227,16 +230,30 @@ const FinancialReport: React.FC = () => {
         <Text>
           <strong>Saldo Projetado:</strong> R${additionalReport?.projectedBalance.toFixed(2) || 'Nenhum dado'}
         </Text>
+      </Card>
+
+      {/* Card de Análise de Risco */}
+      <Card>
+        <CardTitle>Análise de Risco</CardTitle>
         <Text>
           <strong>Análise de Risco:</strong> {additionalReport?.riskAnalysis || 'Nenhum dado'}
         </Text>
+      </Card>
+
+      {/* Card de Previsões */}
+      <Card>
+        <CardTitle>Previsões de Tendências</CardTitle>
         <Text>
-          <strong>Ganhos previsões:</strong> {additionalReport?.trends.gains || 'Nenhuma dica disponível para ganhos,insira mais informações anuais para a geração'}
-          <br></br>
-          <br></br>
-         
-          <strong>Gastos previsões:</strong> {additionalReport?.trends.expenses || 'Sem previsões para gastos, insira mais informações anuais para a geração'}
+          <strong>Ganhos Previsões:</strong> {additionalReport?.trends.gains || 'Nenhuma dica disponível para ganhos, insira mais informações anuais para a geração'}
         </Text>
+        <Text>
+          <strong>Gastos Previsões:</strong> {additionalReport?.trends.expenses || 'Sem previsões para gastos, insira mais informações anuais para a geração'}
+        </Text>
+      </Card>
+
+      {/* Card de Totais e Gastos */}
+      <Card>
+        <CardTitle>Totais</CardTitle>
         <Text>
           <strong>Total de Ganhos:</strong> R${(additionalReport?.insights.totalGains ?? 0).toFixed(2)}
         </Text>
@@ -249,7 +266,9 @@ const FinancialReport: React.FC = () => {
         <Text>
           <strong>Gastos Eventuais Totais:</strong> R${(additionalReport?.insights.eventualExpensesTotal ?? 0).toFixed(2)}
         </Text>
-      </Section>
+      </Card>
+    </Section>
+
 
       <Button onClick={sendReportByEmail}>Enviar Relatório por Email</Button>
 
