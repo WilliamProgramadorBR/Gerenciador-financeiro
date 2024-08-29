@@ -1,36 +1,63 @@
 import React, { useState, useEffect } from 'react';
 import { NumericFormat } from 'react-number-format';
-
 import { fetchTransactions } from '../../repositories/api'; // Atualize o caminho conforme necessário
 import { Transaction } from '../../repositories/types'; // Ajuste o caminho conforme necessário
-import { Container, Title, Button, FormGroup, Label, Input, Select, CardText, TitleText, EditTransactionContainer, SaveButton, EditTitle, TransactionCard } from './styles'; // Atualize o caminho conforme necessário
-import { Link } from 'react-router-dom';
-import Alert from '../../components/Alert';
+import { Container, Title, Button, FormGroup, Label, Input, Select, CardText, TitleText, TransactionCard } from './styles'; // Atualize o caminho conforme necessário
+import CustomModal from '../../components/Custom_modal'; // Importe o componente de modal
 
 const TransactionsPage: React.FC = () => {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
     const [editTransaction, setEditTransaction] = useState<Transaction | null>(null);
     const [description, setDescription] = useState('');
     const [amount, setAmount] = useState(0);
     const [type, setType] = useState<'entrada' | 'saída'>('saída');
     const [frequency, setFrequency] = useState<'recorrente' | 'eventual'>('eventual');
     const [date, setDate] = useState('');
-    const [alertMessage, setAlertMessage] = useState(''); // Estado para a mensagem do alerta
-    const [showAlert, setShowAlert] = useState(false); // Estado para controlar a exibição do alerta
+    const [modalOpen, setModalOpen] = useState(false);
+
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedYear, setSelectedYear] = useState<number | 'todos'>('todos');
+    const [selectedMonth, setSelectedMonth] = useState<number | 'todos'>('todos');
+
+    const [years, setYears] = useState<number[]>([]);
 
     useEffect(() => {
         const loadTransactions = async () => {
             try {
                 const { gains, expenses } = await fetchTransactions();
-                setTransactions([...gains, ...expenses]);
+                const allTransactions = [...gains, ...expenses];
+                setTransactions(allTransactions);
+
+                // Obter anos únicos das transações
+                const uniqueYears = Array.from(
+                    new Set(allTransactions.map(transaction => new Date(transaction.date).getFullYear()))
+                ).sort((a, b) => b - a);
+                setYears(uniqueYears);
+
+                setFilteredTransactions(filterTransactions(allTransactions));
             } catch (error) {
-                setAlertMessage('Erro ao buscar transações.');
-                setShowAlert(true);
+                console.error('Erro ao buscar transações.', error);
             }
         };
 
         loadTransactions();
     }, []);
+
+    const filterTransactions = (transactions: Transaction[]) => {
+        return transactions.filter(transaction => {
+            const matchSearchTerm = transaction.description.toLowerCase().includes(searchTerm.toLowerCase());
+            const transactionDate = new Date(transaction.date);
+            const matchYear = selectedYear === 'todos' || transactionDate.getFullYear() === selectedYear;
+            const matchMonth = selectedMonth === 'todos' || transactionDate.getMonth() + 1 === selectedMonth;
+
+            return matchSearchTerm && matchYear && matchMonth;
+        });
+    };
+
+    useEffect(() => {
+        setFilteredTransactions(filterTransactions(transactions));
+    }, [searchTerm, selectedYear, selectedMonth, transactions]);
 
     const handleUpdate = async () => {
         if (editTransaction) {
@@ -43,19 +70,18 @@ const TransactionsPage: React.FC = () => {
                     body: JSON.stringify({ description, amount, type, frequency, date }),
                 });
                 if (response.ok) {
+                    const updatedTransaction = { ...editTransaction, description, amount, type, frequency, date };
                     setTransactions(transactions.map(transaction =>
-                        transaction.id === editTransaction.id ? { ...transaction, description, amount, type, frequency, date } : transaction
+                        transaction.id === editTransaction.id ? updatedTransaction : transaction
                     ));
-                    setEditTransaction(null);
-                    setAlertMessage('Transação atualizada com sucesso!');
-                    setShowAlert(true);
+                    setFilteredTransactions(filterTransactions(transactions));
+                    setModalOpen(false);
+                    setEditTransaction(null); // Limpa o estado do editTransaction após salvar
                 } else {
-                    setAlertMessage('Falha ao atualizar transação.');
-                    setShowAlert(true);
+                    console.error('Falha ao atualizar transação.');
                 }
             } catch (error) {
-                setAlertMessage('Erro ao atualizar transação.');
-                setShowAlert(true);
+                console.error('Erro ao atualizar transação.', error);
             }
         }
     };
@@ -67,15 +93,12 @@ const TransactionsPage: React.FC = () => {
             });
             if (response.ok) {
                 setTransactions(transactions.filter(transaction => transaction.id !== id));
-                setAlertMessage('Transação excluída com sucesso!');
-                setShowAlert(true);
+                setFilteredTransactions(filterTransactions(transactions));
             } else {
-                setAlertMessage('Falha ao excluir transação.');
-                setShowAlert(true);
+                console.error('Falha ao excluir transação.');
             }
         } catch (error) {
-            setAlertMessage('Erro ao excluir transação.');
-            setShowAlert(true);
+            console.error('Erro ao excluir transação.', error);
         }
     };
 
@@ -83,16 +106,42 @@ const TransactionsPage: React.FC = () => {
         <Container>
             <Title>Controle suas transações</Title>
 
-            {showAlert && (
-  <Alert
-    message={alertMessage}
-    onClose={() => setShowAlert(false)}
-    type="success" // ou "error", "info", etc., dependendo do que você deseja exibir
-  />
-)}
+            <FormGroup>
+                <Label><CardText>Buscar</CardText></Label>
+                <Input
+                    type="text"
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                />
+            </FormGroup>
 
+            <FormGroup>
+                <Label><CardText>Ano</CardText></Label>
+                <Select
+                    value={selectedYear}
+                    onChange={e => setSelectedYear(Number(e.target.value) || 'todos')}
+                >
+                    <option value="todos">Todos</option>
+                    {years.map(year => (
+                        <option key={year} value={year}>{year}</option>
+                    ))}
+                </Select>
+            </FormGroup>
 
-            {transactions.map(transaction => (
+            <FormGroup>
+                <Label><CardText>Mês</CardText></Label>
+                <Select
+                    value={selectedMonth}
+                    onChange={e => setSelectedMonth(Number(e.target.value) || 'todos')}
+                >
+                    <option value="todos">Todos</option>
+                    {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
+                        <option key={month} value={month}>{month}</option>
+                    ))}
+                </Select>
+            </FormGroup>
+
+            {filteredTransactions.map(transaction => (
                 <TransactionCard key={transaction.id}>
                     <TitleText>{transaction.description}</TitleText>
                     <CardText>Valor: {transaction.amount}</CardText>
@@ -100,80 +149,80 @@ const TransactionsPage: React.FC = () => {
                     <Button onClick={() => {
                         setEditTransaction(transaction);
                         setDescription(transaction.description || '');
-                        setAmount(typeof transaction.amount === 'number' ? transaction.amount : Number(transaction.amount));
+                        setAmount(Number(transaction.amount)); // Garantir que o amount é numérico
                         setType(transaction.type as 'entrada' | 'saída');
                         setFrequency(transaction.frequency as 'recorrente' | 'eventual');
-                        setDate(typeof transaction.date === 'string' ? transaction.date : (transaction.date instanceof Date ? transaction.date.toISOString().split('T')[0] : ''));
+                        setDate(new Date(transaction.date).toISOString().split('T')[0]); // Formatar a data
+                        setModalOpen(true);
                     }}>Edit</Button>
                     <Button onClick={() => handleDelete(transaction.id)}>Delete</Button>
                 </TransactionCard>
             ))}
-           {editTransaction && (
-    <EditTransactionContainer>
-        <EditTitle>Edit Transaction</EditTitle>
-        <FormGroup>
-            <Label><CardText>Descrição</CardText></Label>
-            <Input
-                value={description}
-                onChange={e => setDescription(e.target.value)}
-            />
-        </FormGroup>
-        <FormGroup>
-            <Label><CardText>Valor</CardText></Label>
-            <NumericFormat
-                value={amount}
-                onValueChange={(values) => setAmount(values.floatValue || 0)}
-                thousandSeparator="."
-                decimalSeparator=","
-                prefix="R$ "
-                displayType="input"
-                style={{
-                    width: '100%',
-                    padding: '10px',
-                    fontSize: '16px',
-                    borderRadius: '8px',
-                    border: '1px solid #ccc'
-                }}
-            />
-        </FormGroup>
-        <FormGroup>
-            <Label><CardText>Tipo</CardText></Label>
-            <Select
-                value={type}
-                onChange={e => setType(e.target.value as 'entrada' | 'saída')}
-            >
-                <option value="entrada">Entrada</option>
-                <option value="saída">Saída</option>
-            </Select>
-        </FormGroup>
-        <FormGroup>
-            <Label><CardText>Frequência</CardText></Label>
-            <Select
-                value={frequency}
-                onChange={e => setFrequency(e.target.value as 'recorrente' | 'eventual')}
-            >
-                <option value="recorrente">Recorrente</option>
-                <option value="eventual">Eventual</option>
-            </Select>
-        </FormGroup>
-        <FormGroup>
-            <Label><CardText>Data</CardText></Label>
-            <Input
-                type="date"
-                value={date}
-                onChange={e => setDate(e.target.value)}
-            />
-        </FormGroup>
-        <SaveButton onClick={handleUpdate}>Salvar edição</SaveButton>
-    </EditTransactionContainer>
-)}
 
-            <Link to="/register">
-                <Button>Inserir nova transação</Button>
-            </Link>
+            {editTransaction && (
+                <CustomModal
+                    isOpen={modalOpen}
+                    toggle={() => setModalOpen(!modalOpen)}
+                    onSave={handleUpdate}
+                    title="Editar Transação"
+                >
+                    <FormGroup>
+                        <Label><CardText>Descrição</CardText></Label>
+                        <Input
+                            value={description}
+                            onChange={e => setDescription(e.target.value)}
+                        />
+                    </FormGroup>
+                    <FormGroup>
+                        <Label><CardText>Valor</CardText></Label>
+                        <NumericFormat
+                            value={amount}
+                            onValueChange={(values) => setAmount(values.floatValue || 0)}
+                            thousandSeparator="."
+                            decimalSeparator=","
+                            prefix="R$ "
+                            displayType="input"
+                            style={{
+                                width: '100%',
+                                padding: '10px',
+                                fontSize: '16px',
+                                borderRadius: '8px',
+                                border: '1px solid #ccc'
+                            }}
+                        />
+                    </FormGroup>
+                    <FormGroup>
+                        <Label><CardText>Tipo</CardText></Label>
+                        <Select
+                            value={type}
+                            onChange={e => setType(e.target.value as 'entrada' | 'saída')}
+                        >
+                            <option value="entrada">Entrada</option>
+                            <option value="saída">Saída</option>
+                        </Select>
+                    </FormGroup>
+                    <FormGroup>
+                        <Label><CardText>Frequência</CardText></Label>
+                        <Select
+                            value={frequency}
+                            onChange={e => setFrequency(e.target.value as 'recorrente' | 'eventual')}
+                        >
+                            <option value="recorrente">Recorrente</option>
+                            <option value="eventual">Eventual</option>
+                        </Select>
+                    </FormGroup>
+                    <FormGroup>
+                        <Label><CardText>Data</CardText></Label>
+                        <Input
+                            type="date"
+                            value={date}
+                            onChange={e => setDate(e.target.value)}
+                        />
+                    </FormGroup>
+                </CustomModal>
+            )}
         </Container>
     );
 };
 
 export default TransactionsPage;
-

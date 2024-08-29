@@ -52,6 +52,7 @@ const Aside: React.FC = () => {
 
     return (
         <Container menuIsOpen={toggleMenuIsOpened}>
+             
             <Header>
                 <ToggleMenu onClick={handleToggleMenu}>
                     { toggleMenuIsOpened ? <MdClose /> : <MdMenu /> }
@@ -60,6 +61,7 @@ const Aside: React.FC = () => {
                 <LogImg src={logoImg} alt="Logo Minha Carteira" />
                 <Title>Minha Carteira</Title>
             </Header>
+            <Clock/>
 
             <MenuContainer>
                 <MenuItemLink as={Link} to="/dashboard">
@@ -114,7 +116,9 @@ const Aside: React.FC = () => {
                     onChange={handleChangeTheme}
                 />
             </ThemeToggleFooter>
+           
         </Container>
+      
     );
 }
 
