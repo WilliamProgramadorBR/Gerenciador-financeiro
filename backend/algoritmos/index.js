@@ -237,186 +237,97 @@ function calculatePercentages(ganhos, gastos) {
   
   
   
-  function analyzeFinancialHealth(ganhos, gastos) {
-    // Cálculos iniciais
-    const totalGains = ganhos.reduce((sum, ganho) => sum + ganho.amount, 0);
-    const totalExpenses = gastos.reduce((sum, gasto) => sum + gasto.amount, 0);
-    const balance = totalGains - totalExpenses;
+ // Função principal de análise de saúde financeira
+function analyzeFinancialHealth(ganhos, gastos) {
+  // Cálculos iniciais
+  const totalGains = ganhos.reduce((sum, ganho) => sum + ganho.amount, 0);
+  const totalExpenses = gastos.reduce((sum, gasto) => sum + gasto.amount, 0);
+  const balance = totalGains - totalExpenses;
 
-    // Classificar despesas por tipo
-    const recurringExpenses = gastos.filter(gasto => gasto.frequency === 'recorrente');
-    const eventualExpenses = gastos.filter(gasto => gasto.frequency === 'eventual');
+  // Classificação de despesas por tipo
+  const recurringExpenses = gastos.filter(gasto => gasto.frequency === 'recorrente');
+  const eventualExpenses = gastos.filter(gasto => gasto.frequency === 'eventual');
 
-    // Cálculo de médias mensais
-    const averageMonthlyGains = totalGains / 12; // Supondo que os ganhos sejam anuais
-    const averageMonthlyExpenses = totalExpenses / 12;
+  // Cálculo de médias mensais
+  const averageMonthlyGains = totalGains / 12;
+  const averageMonthlyExpenses = totalExpenses / 12;
 
-    // Projeção de saldo para os próximos meses
-    const projectedBalance = balance + (averageMonthlyGains - averageMonthlyExpenses) * 6; // Projeção de 6 meses
+  // Projeção de saldo para os próximos meses
+  const projectedBalance = balance + (averageMonthlyGains - averageMonthlyExpenses) * 6;
 
-    // Análise de risco financeiro
-    const riskAnalysis = projectedBalance < 0 
-        ? 'Alerta: Você está projetando um saldo negativo para os próximos meses. É essencial reavaliar seu planejamento financeiro e considerar estratégias para aumentar a renda ou reduzir os gastos.' 
-        : 'Sua saúde financeira está estável no momento. No entanto, é sempre bom acompanhar regularmente suas despesas e receitas para manter esse controle.';
+  // Análise de risco financeiro
+  const riskAnalysis = projectedBalance < 0
+      ? 'Alerta: Você está projetando um saldo negativo para os próximos meses. É essencial reavaliar seu planejamento financeiro.'
+      : 'Sua saúde financeira está estável, mas continue monitorando regularmente suas finanças.';
 
-    // Sugestões baseadas na análise
-    const tips = [];
-    if (eventualExpenses.length > recurringExpenses.length) {
-        tips.push('Considere revisar e reduzir suas despesas eventuais. Esse tipo de gasto pode ser mais flexível e ajustar seu orçamento pode melhorar seu controle financeiro.');
-    }
-    if (averageMonthlyExpenses > averageMonthlyGains) {
-        tips.push('Sua média de despesas mensais está superando seus ganhos mensais. Avalie formas de aumentar sua renda ou diminua suas despesas para evitar um possível déficit financeiro.');
-    }
-    if (balance < 0) {
-        tips.push('Seu saldo atual está negativo. Planeje uma redução imediata de gastos e busque maneiras de aumentar sua receita para estabilizar sua situação financeira.');
-    } else if (balance < averageMonthlyExpenses) {
-        tips.push('Seu saldo atual está abaixo da média dos seus gastos mensais. Considere economizar mais e procurar formas de melhorar sua situação financeira.');
-    }
+  // Sugestões baseadas na análise
+  const tips = generateFinancialTips(balance, averageMonthlyExpenses, averageMonthlyGains, recurringExpenses, eventualExpenses);
 
-    // Agrupar ganhos e despesas por mês
-    const groupedGains = groupByMonth(ganhos);
-    const groupedExpenses = groupByMonth(gastos);
+  // Agrupamento de ganhos e despesas por mês
+  const groupedGains = groupByMonth(ganhos);
+  const groupedExpenses = groupByMonth(gastos);
 
-    // Análise de Tendências
-    const gainsTrends = predictFutureTrend(groupedGains);
-    const expensesTrends = predictFutureTrend(groupedExpenses);
+  // Análise de tendências
+  const gainsTrends = predictFutureTrend(groupedGains);
+  const expensesTrends = predictFutureTrend(groupedExpenses);
 
-    // Análise de Tendências com Mensagens Detalhadas
-    const trendsAnalysis = {
-        gains: analyzeTrends(gainsTrends, totalGains, averageMonthlyGains, 'ganhos'),
-        expenses: analyzeTrends(expensesTrends, totalExpenses, averageMonthlyExpenses, 'despesas'),
-    };
+  // Análise detalhada de tendências
+  const trendsAnalysis = {
+      gains: analyzeTrends(gainsTrends, totalGains, averageMonthlyGains, 'ganhos'),
+      expenses: analyzeTrends(expensesTrends, totalExpenses, averageMonthlyExpenses, 'despesas'),
+  };
 
-    // Relatório de saúde financeira
-    const report = {
-        currentBalance: balance,
-        averageMonthlyGains,
-        averageMonthlyExpenses,
-        projectedBalance,
-        riskAnalysis,
-        tips,
-        insights: {
-            totalGains,
-            totalExpenses,
-            recurringExpensesTotal: recurringExpenses.reduce((sum, item) => sum + item.amount, 0),
-            eventualExpensesTotal: eventualExpenses.reduce((sum, item) => sum + item.amount, 0),
-        },
-        trends: trendsAnalysis,
-    };
+  // Relatório consolidado
+  const report = {
+      currentBalance: balance,
+      averageMonthlyGains,
+      averageMonthlyExpenses,
+      projectedBalance,
+      riskAnalysis,
+      tips,
+      insights: {
+          totalGains,
+          totalExpenses,
+          recurringExpensesTotal: recurringExpenses.reduce((sum, item) => sum + item.amount, 0),
+          eventualExpensesTotal: eventualExpenses.reduce((sum, item) => sum + item.amount, 0),
+      },
+      trends: trendsAnalysis,
+  };
 
-    return report;
+  return report;
 }
 
+// Função para gerar dicas financeiras
+function generateFinancialTips(balance, averageMonthlyExpenses, averageMonthlyGains, recurringExpenses, eventualExpenses) {
+  const tips = [];
+  if (eventualExpenses.length > recurringExpenses.length) {
+      tips.push('Considere revisar e reduzir suas despesas eventuais para melhorar seu controle financeiro.');
+  }
+  if (averageMonthlyExpenses > averageMonthlyGains) {
+      tips.push('Sua média de despesas mensais está superando seus ganhos mensais. Avalie formas de aumentar sua renda ou diminuir suas despesas.');
+  }
+  if (balance < 0) {
+      tips.push('Seu saldo atual está negativo. Planeje uma redução imediata de gastos e busque maneiras de aumentar sua receita.');
+  } else if (balance < averageMonthlyExpenses) {
+      tips.push('Seu saldo atual está abaixo da média dos seus gastos mensais. Considere economizar mais.');
+  }
+  return tips;
+}
+
+// Função para agrupar dados por mês
 function groupByMonth(data) {
-    return data.reduce((acc, item) => {
-        const month = new Date(item.date).toISOString().slice(0, 7); // 'YYYY-MM'
-        if (!acc[month]) acc[month] = [];
-        acc[month].push(item);
-        return acc;
-    }, {});
+  return data.reduce((acc, item) => {
+      const month = new Date(item.date).toISOString().slice(0, 7); // 'YYYY-MM'
+      acc[month] = acc[month] || [];
+      acc[month].push(item);
+      return acc;
+  }, {});
 }
-
-function calculateQuantile(data, quantile) {
-    data.sort((a, b) => a - b);
-    const index = (quantile * (data.length - 1));
-    const lowerIndex = Math.floor(index);
-    const upperIndex = Math.ceil(index);
-    const weight = index - lowerIndex;
-    return (data[lowerIndex] * (1 - weight)) + (data[upperIndex] * weight);
-}
-
-function predictFutureTrend(groupedData) {
-    const months = Object.keys(groupedData);
-    if (months.length < 6) {
-        return 'Dados insuficientes para previsão. É necessário ter pelo menos 6 meses de dados.';
-    }
-
-    // Pegue os últimos 6 meses para análise
-    const recentMonths = months.slice(-6);
-    const totals = recentMonths.map(month => 
-        groupedData[month].reduce((sum, item) => sum + item.amount, 0)
-    );
-
-    // Detecção de outliers usando o intervalo interquartil (IQR)
-    const q1 = calculateQuantile(totals, 0.25);
-    const q3 = calculateQuantile(totals, 0.75);
-    const iqr = q3 - q1;
-    const filteredTotals = totals.filter(total => total >= (q1 - 1.5 * iqr) && total <= (q3 + 1.5 * iqr));
-
-    // Regressão múltipla usando regressão polinomial (grau 2)
-    const X = filteredTotals.map((_, i) => [1, i + 1, Math.pow(i + 1, 2)]); // Matriz de características
-    const Y = filteredTotals;
-
-    // Calcule os coeficientes da regressão
-    const coefficients = polynomialRegression(X, Y, 2);
-
-    // Previsão para o próximo mês usando os coeficientes da regressão múltipla
-    const nextMonth = filteredTotals.length + 1;
-    const futurePredictionMultiple = coefficients.reduce((sum, coef, index) => sum + coef * Math.pow(nextMonth, index), 0);
-
-    return {
-        lastMonthTotal: filteredTotals[filteredTotals.length - 1],
-        secondLastMonthTotal: filteredTotals[filteredTotals.length - 2],
-        futurePredictionMultiple,
-    };
-}
-
-function polynomialRegression(X, Y, degree) {
-    const X_transpose = math.transpose(X);
-    const XtX = math.multiply(X_transpose, X);
-    const XtY = math.multiply(X_transpose, Y);
-    const coeffs = math.lusolve(XtX, XtY);
-    return coeffs.map(c => c[0]);
-}
-
-function analyzeTrends(trendData, totalCurrent, averageMonthly, type) {
-    console.log('Trend Data:', trendData);
-
-    if (typeof trendData === 'string') {
-        return `Não há dados suficientes para prever a tendência de ${type}. É necessário ter pelo menos 6 meses de dados para uma análise precisa.`;
-    }
-
-    // Verificar se os dados são válidos
-    const { lastMonthTotal, futurePredictionMultiple } = trendData;
-    if (isNaN(lastMonthTotal) || isNaN(futurePredictionMultiple)) {
-        return `Dados insuficientes ou inválidos para calcular a previsão de ${type}.`;
-    }
-
-    // Logs para depuração
-    console.log(`Último total registrado: R$${lastMonthTotal.toFixed(2)}`);
-    console.log(`Previsão múltipla para o próximo mês: R$${futurePredictionMultiple.toFixed(2)}`);
-
-    let message = '';
-
-    // Análise das tendências com base na previsão múltipla
-    if (futurePredictionMultiple > lastMonthTotal) {
-        message = `Baseado nas tendências atuais, o total de ${type} está previsto para aumentar. A previsão múltipla para o próximo mês é de R$${futurePredictionMultiple.toFixed(2)}. Se esta tendência continuar, o ${type} pode seguir crescendo.`;
-    } else if (futurePredictionMultiple < lastMonthTotal) {
-        message = `As tendências atuais sugerem uma possível diminuição no total de ${type}. A previsão múltipla para o próximo mês é de R$${futurePredictionMultiple.toFixed(2)}. Isso indica que pode haver uma redução no ${type} nos próximos meses.`;
-    } else {
-        message = `Com base nas tendências atuais, o total de ${type} deve permanecer estável. A previsão múltipla para o próximo mês é de R$${futurePredictionMultiple.toFixed(2)}. Portanto, o ${type} deve se manter constante se as condições atuais persistirem.`;
-    }
-
-    // Integração dos parâmetros totalCurrent e averageMonthly se fornecidos
-    if (totalCurrent !== undefined && averageMonthly !== undefined) {
-        message += ` Atualmente, o total de ${type} é de R$${totalCurrent.toFixed(2)} e a média mensal é de R$${averageMonthly.toFixed(2)}. Isso fornece um contexto adicional para interpretar as previsões.`;
-    }
-
-    return message;
-}
-
-
-
-
-  
-
-  
-  
   module.exports= {
     calculatePercentages,
     formatCurrency,
     categorizeData,
     generateMonthlyData,
-    analyzeFinancialHealth
+
   };
   

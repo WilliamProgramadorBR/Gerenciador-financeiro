@@ -3,7 +3,8 @@ const router = express.Router();
 const axios = require('axios');
 const nodemailer = require('nodemailer');
 const  setupDatabase  = require('../conexao_db/index');
-const { calculatePercentages, analyzeFinancialHealth } = require('../algoritmos/index'); // Importe a função que configura o banco de dados
+const { calculatePercentages } = require('../algoritmos/index');
+const {analyzeFinancialTrendsIA} = require('../rede_neurais') // Importe a função que configura o banco de dados
 const IBGE_NEWS_API_URL = 'http://servicodados.ibge.gov.br/api/v3/noticias/'; // Defina a URL da API de notícias aqui
 
 // Login
@@ -102,7 +103,7 @@ router.get('/api/report', async (req, res) => {
       // Separar ganhos e gastos
       const ganhos = records.filter(record => record.type === 'entrada');
       const gastos = records.filter(record => record.type === 'saída');
-    const relatorio = analyzeFinancialHealth(ganhos, gastos)
+    const relatorio = analyzeFinancialTrendsIA(ganhos, gastos)
   
       res.json(relatorio);
     } catch (err) {

@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Container, Title, Section, SectionTitle, Text, Loader,Card, CardTitle } from './styles';
+import { Container, Title, Section, SectionTitle, Text, Loader, Card, CardTitle, ImageContainer, Image, Button } from './styles';
 import opsImg from '../../assets/ops.svg';
-import { ImageContainer, Image, Button } from './styles';
 import Alert from '../../components/Alert';
-
-
 
 interface MonthlyData {
   [period: string]: {
@@ -28,39 +25,18 @@ interface FinancialReportData {
   };
   report: string;
 }
-
-interface AdditionalReportData {
-  currentBalance: number;
-  averageMonthlyGains: number;
-  averageMonthlyExpenses: number;
-  projectedBalance: number;
-  riskAnalysis: string;
-  tips: string[];
-  insights: {
-    totalGains: number;
-    totalExpenses: number;
-    recurringExpensesTotal: number;
-    eventualExpensesTotal: number;
-  },
-  trends:{
-    gains:number,
-    expenses: number
-  }
+interface IA{
+  gainMessage: string,
+  expenseMessage: string
 }
+
+
 
 const FinancialReport: React.FC = () => {
   const [report, setReport] = useState<FinancialReportData | null>(null);
-  const [additionalReport, setAdditionalReport] = useState<AdditionalReportData | null>(null);
+  
+  const [IAReport, setIAReport] = useState<IA | null>(null);
   const [alert, setAlert] = useState<{ message: string; type: 'success' | 'error' | 'info'; } | null>(null);
-
-  const saveEmailSettings = (settings: { sendDaily: boolean; sendDate?: string }) => {
-    localStorage.setItem('emailSettings', JSON.stringify(settings));
-  };
-
-  const getEmailSettings = (): { sendDaily: boolean; sendDate?: string } => {
-    const settings = localStorage.getItem('emailSettings');
-    return settings ? JSON.parse(settings) : { sendDaily: false };
-  };
 
   useEffect(() => {
     async function fetchReport() {
@@ -74,8 +50,8 @@ const FinancialReport: React.FC = () => {
 
     async function fetchAdditionalReport() {
       try {
-        const response = await axios.get<AdditionalReportData>('http://localhost:3008/api/prevision');
-        setAdditionalReport(response.data); // Atualize o tipo esperado aqui
+        const response = await axios.get<IA>('http://localhost:3008/api/prevision');
+        setIAReport(response.data);
         console.log(response.data); // Para depuração
       } catch (error) {
         console.error('Erro ao buscar o relatório adicional', error);
@@ -137,7 +113,7 @@ const FinancialReport: React.FC = () => {
     }
   };
 
-  if (!report) return <Loader />;
+  if (!report || !IAReport) return <Loader />;
 
   if (isReportEmpty(report)) {
     return (
@@ -213,72 +189,33 @@ const FinancialReport: React.FC = () => {
       </Section>
 
       <Section>
-      <SectionTitle>Relatório Completo</SectionTitle>
+        <SectionTitle>Relatório Completo</SectionTitle>
+        {IAReport ? (
+      <>
+        <Section>
+          <SectionTitle>Previsão de Ganhos e Gastos</SectionTitle>
+          <Text>
+            <strong>Ganhos Previsões:</strong> {IAReport.gainMessage || 'Nenhum dado'}
+          </Text>
+          <Text>
+            <strong>Gastos Previsões:</strong> {IAReport.expenseMessage || 'Nenhum dado'}
+          </Text>
+        </Section>
+      </>
+    ) : (
+      <Loader />
+    )}
+     </Section>
 
-      {/* Card do Saldo e Médias */}
-      <Card>
-        <CardTitle>Resumo Financeiro</CardTitle>
-        <Text>
-          <strong>Saldo Atual:</strong> R${additionalReport?.currentBalance.toFixed(2) || 'Nenhum dado'}
-        </Text>
-        <Text>
-          <strong>Média de Ganhos Mensais:</strong> R${additionalReport?.averageMonthlyGains.toFixed(2) || 'Nenhum dado'}
-        </Text>
-        <Text>
-          <strong>Média de Gastos Mensais:</strong> R${additionalReport?.averageMonthlyExpenses.toFixed(2) || 'Nenhum dado'}
-        </Text>
-        <Text>
-          <strong>Saldo Projetado:</strong> R${additionalReport?.projectedBalance.toFixed(2) || 'Nenhum dado'}
-        </Text>
-      </Card>
+      <Section>
+        <Button onClick={sendReportByEmail}>Enviar Relatório por E-mail</Button>
+      </Section>
 
-      {/* Card de Análise de Risco */}
-      <Card>
-        <CardTitle>Análise de Risco</CardTitle>
-        <Text>
-          <strong>Análise de Risco:</strong> {additionalReport?.riskAnalysis || 'Nenhum dado'}
-        </Text>
-      </Card>
-
-      {/* Card de Previsões */}
-      <Card>
-        <CardTitle>Previsões de Tendências</CardTitle>
-        <Text>
-          <strong>Ganhos Previsões:</strong> {additionalReport?.trends.gains || 'Nenhuma dica disponível para ganhos, insira mais informações anuais para a geração'}
-        </Text>
-        <Text>
-          <strong>Gastos Previsões:</strong> {additionalReport?.trends.expenses || 'Sem previsões para gastos, insira mais informações anuais para a geração'}
-        </Text>
-      </Card>
-
-      {/* Card de Totais e Gastos */}
-      <Card>
-        <CardTitle>Totais</CardTitle>
-        <Text>
-          <strong>Total de Ganhos:</strong> R${(additionalReport?.insights.totalGains ?? 0).toFixed(2)}
-        </Text>
-        <Text>
-          <strong>Total de Gastos:</strong> R${(additionalReport?.insights.totalExpenses ?? 0).toFixed(2)}
-        </Text>
-        <Text>
-          <strong>Gastos Recorrentes Totais:</strong> R${(additionalReport?.insights.recurringExpensesTotal ?? 0).toFixed(2)}
-        </Text>
-        <Text>
-          <strong>Gastos Eventuais Totais:</strong> R${(additionalReport?.insights.eventualExpensesTotal ?? 0).toFixed(2)}
-        </Text>
-      </Card>
-    </Section>
-
-
-      <Button onClick={sendReportByEmail}>Enviar Relatório por Email</Button>
-
-      {alert && (
-        <Alert
+      {alert && <Alert
         message={alert.message}
         type={alert.type}
         onClose={() => setAlert(null)}
-      />
-      )}
+      />}
     </Container>
   );
 };
