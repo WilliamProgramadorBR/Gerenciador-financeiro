@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Container, Title, Section, SectionTitle, Text, Loader, Card, CardTitle, ImageContainer, Image, Button } from './styles';
+import { Container, Title, Section, SectionTitle, Text, Loader, Card, CardTitle, ImageContainer, Image, Button, Modal, ModalContent, ModalTitle, CloseButton } from './styles';
 import opsImg from '../../assets/ops.svg';
 import Alert from '../../components/Alert';
 
@@ -25,18 +25,18 @@ interface FinancialReportData {
   };
   report: string;
 }
-interface IA{
-  gainMessage: string,
-  expenseMessage: string
+
+interface IA {
+  gainMessage: string;
+  expenseMessage: string;
 }
-
-
 
 const FinancialReport: React.FC = () => {
   const [report, setReport] = useState<FinancialReportData | null>(null);
-  
   const [IAReport, setIAReport] = useState<IA | null>(null);
   const [alert, setAlert] = useState<{ message: string; type: 'success' | 'error' | 'info'; } | null>(null);
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [modalContent, setModalContent] = useState<string>('');
 
   useEffect(() => {
     async function fetchReport() {
@@ -52,7 +52,6 @@ const FinancialReport: React.FC = () => {
       try {
         const response = await axios.get<IA>('http://localhost:3008/api/prevision');
         setIAReport(response.data);
-        console.log(response.data); // Para depuração
       } catch (error) {
         console.error('Erro ao buscar o relatório adicional', error);
       }
@@ -113,6 +112,16 @@ const FinancialReport: React.FC = () => {
     }
   };
 
+  const handleShowModal = (content: string) => {
+    setModalContent(content);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setModalContent('');
+  };
+
   if (!report || !IAReport) return <Loader />;
 
   if (isReportEmpty(report)) {
@@ -135,18 +144,22 @@ const FinancialReport: React.FC = () => {
 
       <Section>
         <SectionTitle>Percentuais de Ganhos e Gastos</SectionTitle>
-        <Text>
-          <strong>Gastos Eventuais:</strong> {(report.eventualExpenses ?? 0).toFixed(2)}%
-        </Text>
-        <Text>
-          <strong>Gastos Recorrentes:</strong> {(report.recurringExpenses ?? 0).toFixed(2)}%
-        </Text>
-        <Text>
-          <strong>Ganhos Eventuais:</strong> {(report.eventualGains ?? 0).toFixed(2)}%
-        </Text>
-        <Text>
-          <strong>Ganhos Recorrentes:</strong> {(report.recurringGains ?? 0).toFixed(2)}%
-        </Text>
+        <Card>
+          <CardTitle>Gastos Eventuais</CardTitle>
+          <Text>{(report.eventualExpenses ?? 0).toFixed(2)}%</Text>
+        </Card>
+        <Card>
+          <CardTitle>Gastos Recorrentes</CardTitle>
+          <Text>{(report.recurringExpenses ?? 0).toFixed(2)}%</Text>
+        </Card>
+        <Card>
+          <CardTitle>Ganhos Eventuais</CardTitle>
+          <Text>{(report.eventualGains ?? 0).toFixed(2)}%</Text>
+        </Card>
+        <Card>
+          <CardTitle>Ganhos Recorrentes</CardTitle>
+          <Text>{(report.recurringGains ?? 0).toFixed(2)}%</Text>
+        </Card>
       </Section>
 
       <Section>
@@ -172,8 +185,8 @@ const FinancialReport: React.FC = () => {
           <Text>Não há dados mensais disponíveis.</Text>
         ) : (
           Object.entries(report.monthlyData.monthlyData).map(([period, { totalGains, totalExpenses }]) => (
-            <div key={period}>
-              <SectionTitle>{period}</SectionTitle>
+            <Card key={period}>
+              <CardTitle>{period}</CardTitle>
               <Text>
                 <strong>Ganhos Totais:</strong> R${(totalGains ?? 0).toFixed(2)}
               </Text>
@@ -183,7 +196,7 @@ const FinancialReport: React.FC = () => {
               <Text>
                 {report.monthlyData.tips || 'Nenhuma dica personalizada para este período.'}
               </Text>
-            </div>
+            </Card>
           ))
         )}
       </Section>
@@ -191,21 +204,23 @@ const FinancialReport: React.FC = () => {
       <Section>
         <SectionTitle>Relatório Completo</SectionTitle>
         {IAReport ? (
-      <>
-        <Section>
-          <SectionTitle>Previsão de Ganhos e Gastos</SectionTitle>
-          <Text>
-            <strong>Ganhos Previsões:</strong> {IAReport.gainMessage || 'Nenhum dado'}
-          </Text>
-          <Text>
-            <strong>Gastos Previsões:</strong> {IAReport.expenseMessage || 'Nenhum dado'}
-          </Text>
-        </Section>
-      </>
-    ) : (
-      <Loader />
-    )}
-     </Section>
+          <>
+            <Section>
+              <SectionTitle>Previsão de Ganhos e Gastos</SectionTitle>
+              <Card>
+                <CardTitle>Ganhos Previsões</CardTitle>
+                <Text>{IAReport.gainMessage || 'Nenhum dado'}</Text>
+              </Card>
+              <Card>
+                <CardTitle>Gastos Previsões</CardTitle>
+                <Text>{IAReport.expenseMessage || 'Nenhum dado'}</Text>
+              </Card>
+            </Section>
+          </>
+        ) : (
+          <Loader />
+        )}
+      </Section>
 
       <Section>
         <Button onClick={sendReportByEmail}>Enviar Relatório por E-mail</Button>
@@ -216,6 +231,17 @@ const FinancialReport: React.FC = () => {
         type={alert.type}
         onClose={() => setAlert(null)}
       />}
+
+      {/* Modal */}
+      {showModal && (
+        <Modal>
+          <ModalContent>
+            <ModalTitle>Detalhes do Relatório</ModalTitle>
+            <Text dangerouslySetInnerHTML={{ __html: modalContent }} />
+            <CloseButton onClick={handleCloseModal}>Fechar</CloseButton>
+          </ModalContent>
+        </Modal>
+      )}
     </Container>
   );
 };

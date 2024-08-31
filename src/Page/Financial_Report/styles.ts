@@ -5,6 +5,60 @@ import styled, { keyframes } from 'styled-components';
   to { transform: rotate(360deg); }
 `;
 
+export const Modal = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+`;
+
+export const ModalContent = styled.div`
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 600px;
+  width: 100%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  position: relative;
+`;
+
+export const ModalTitle = styled.h2`
+  margin: 0;
+  font-size: 1.5em;
+  color: #333;
+`;
+
+export const CloseButton = styled.button`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #f5f5f5;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.2em;
+  color: #333;
+  transition: background 0.3s ease;
+
+  &:hover {
+    background: #ddd;
+  }
+
+  &:focus {
+    outline: none;
+  }
+`;
 
 
 

@@ -21,6 +21,30 @@ function detectOutliers(data) {
   return data.filter(value => value >= lowerBound && value <= upperBound);
 }
 
+// Função para realizar regressão linear
+function linearRegression(X, Y) {
+  const n = X.length;
+  const X_mean = X.reduce((sum, x) => sum + x, 0) / n;
+  const Y_mean = Y.reduce((sum, y) => sum + y, 0) / n;
+  
+  const numerator = X.reduce((sum, x, i) => sum + (x - X_mean) * (Y[i] - Y_mean), 0);
+  const denominator = X.reduce((sum, x) => sum + Math.pow(x - X_mean, 2), 0);
+  
+  const slope = numerator / denominator;
+  const intercept = Y_mean - slope * X_mean;
+  
+  return { slope, intercept };
+}
+
+// Função para realizar regressão polinomial
+function polynomialRegression(X, Y, degree) {
+  const X_transpose = math.transpose(X);
+  const XtX = math.multiply(X_transpose, X);
+  const XtY = math.multiply(X_transpose, Y);
+  const coeffs = math.lusolve(XtX, XtY);
+  return coeffs.map(c => c[0]);
+}
+
 // Função para prever tendências futuras
 function predictFutureTrend(groupedData) {
   const months = Object.keys(groupedData);
@@ -45,17 +69,18 @@ function predictFutureTrend(groupedData) {
     return 'Dados insuficientes para previsão após remoção de outliers.';
   }
 
-  // Definir o grau da regressão com base na quantidade de pontos disponíveis
+  // Definir o modelo com base na quantidade de pontos disponíveis
   const degree = filteredTotals.length < 3 ? 1 : 2;
-  const X = filteredTotals.map((_, i) => [1, i + 1, degree === 2 ? Math.pow(i + 1, 2) : 0]);
+  const X = filteredTotals.map((_, i) => [i + 1, degree === 2 ? Math.pow(i + 1, 2) : 0]);
   const Y = filteredTotals;
 
-  const coefficients = polynomialRegression(X, Y, degree);
+  // Usar regressão linear para grau 1 e polinomial para grau 2
+  const coefficients = degree === 1 ? linearRegression(X.map(row => row[0]), Y) : polynomialRegression(X, Y, degree);
 
   const nextMonthIndex = filteredTotals.length + 1;
-  const futurePrediction = coefficients.reduce((sum, coef, index) => {
-    return sum + coef * (index > 0 ? Math.pow(nextMonthIndex, index) : 1);
-  }, 0);
+  const futurePrediction = degree === 1
+    ? coefficients.slope * nextMonthIndex + coefficients.intercept
+    : coefficients.reduce((sum, coef, index) => sum + coef * Math.pow(nextMonthIndex, index), 0);
 
   console.log(`Previsão para o próximo mês: ${futurePrediction}`);
 
@@ -64,15 +89,6 @@ function predictFutureTrend(groupedData) {
     secondLastMonthTotal: filteredTotals[filteredTotals.length - 2],
     futurePrediction,
   };
-}
-
-// Função para realizar regressão polinomial
-function polynomialRegression(X, Y, degree) {
-  const X_transpose = math.transpose(X);
-  const XtX = math.multiply(X_transpose, X);
-  const XtY = math.multiply(X_transpose, Y);
-  const coeffs = math.lusolve(XtX, XtY);
-  return coeffs.map(c => c[0]);
 }
 
 // Função principal para prever tendências de ganhos e gastos
