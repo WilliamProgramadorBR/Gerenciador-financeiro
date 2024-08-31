@@ -32,7 +32,33 @@ const List: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:3008/api/ganhos');
+        // Recuperar o item do localStorage
+        const userJson = localStorage.getItem('@minha-carteira:user');
+        let id_user = 0;
+
+        if (userJson) {
+          // Converter a string JSON para um objeto
+          const user = JSON.parse(userJson);
+
+          // Verificar se o resultado é um objeto e se possui um id
+          if (typeof user === 'object' && user !== null && user.id) {
+            id_user = user.id;
+          } else {
+            console.error('O item no localStorage não é um objeto válido.');
+            return;
+          }
+        } else {
+          console.error('Item não encontrado no localStorage.');
+          return;
+        }
+
+        // Fazer a requisição à API com o id_user
+        const response = await fetch(`http://localhost:3008/api/transactions?id_user=${id_user}`);
+        
+        if (!response.ok) {
+          throw new Error('Erro ao buscar dados da API');
+        }
+        
         const data = await response.json();
         setApiData(data);
       } catch (error) {

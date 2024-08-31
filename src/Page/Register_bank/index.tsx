@@ -62,7 +62,7 @@ const TransactionsPage: React.FC = () => {
     const handleUpdate = async () => {
         if (editTransaction) {
             try {
-                const response = await fetch(`http://localhost:3008/api/ganhos/${editTransaction.id}`, {
+                const response = await fetch(`http://localhost:3008/api/transactions/${editTransaction.id}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -88,7 +88,7 @@ const TransactionsPage: React.FC = () => {
 
     const handleDelete = async (id: number) => {
         try {
-            const response = await fetch(`http://localhost:3008/api/ganhos/${id}`, {
+            const response = await fetch(`http://localhost:3008/api/transactions/${id}`, {
                 method: 'DELETE',
             });
             if (response.ok) {

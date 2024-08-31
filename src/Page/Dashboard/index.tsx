@@ -53,25 +53,53 @@ const Dashboard: React.FC = () => {
         useEffect(() => {
             const fetchData = async () => {
                 try {
-                    const response = await fetch('http://localhost:3008/api/ganhos');
-                    if (!response.ok) {
-                        throw new Error('Failed to fetch data');
+                  // Recuperar o item do localStorage
+                  const userJson = localStorage.getItem('@minha-carteira:user');
+                  let id_user = 0;
+          
+                  if (userJson) {
+                    // Converter a string JSON para um objeto
+                    const user = JSON.parse(userJson);
+          
+                    // Verificar se o resultado é um objeto e se possui um id
+                    if (typeof user === 'object' && user !== null && user.id) {
+                      id_user = user.id;
+                    } else {
+                      console.error('O item no localStorage não é um objeto válido.');
+                      return;
                     }
-                    const data: Transaction[] = await response.json();
-                    
-                    const filteredGains = data.filter(transaction => transaction.type === 'entrada');
-                    const filteredExpenses = data.filter(transaction => transaction.type === 'saída');
-                    
-                    setGains(filteredGains);
-                    setExpenses(filteredExpenses);
-                    localStorage.setItem('gains', JSON.stringify(filteredGains));
-                    localStorage.setItem('expenses', JSON.stringify(filteredExpenses));
+                  } else {
+                    console.error('Item não encontrado no localStorage.');
+                    return;
+                  }
+          
+                  // Fazer a requisição à API com o id_user
+                  const response = await fetch(`http://localhost:3008/api/transactions?id_user=${id_user}`);
+                  
+                  if (!response.ok) {
+                    throw new Error('Erro ao buscar dados da API');
+                  }
+                  
+                  const data: Transaction[] = await response.json();
+                  
+                  // Filtrar ganhos e despesas
+                  const filteredGains = data.filter(transaction => transaction.type === 'entrada');
+                  const filteredExpenses = data.filter(transaction => transaction.type === 'saída');
+                  
+                  // Atualizar o estado
+                  setGains(filteredGains);
+                  setExpenses(filteredExpenses);
+                  
+                  // Armazenar no localStorage
+                  localStorage.setItem('gains', JSON.stringify(filteredGains));
+                  localStorage.setItem('expenses', JSON.stringify(filteredExpenses));
+                  
                 } catch (error) {
-                    setError(error as Error);
+                  setError(error as Error);
                 } finally {
-                    setLoading(false);
+                  setLoading(false);
                 }
-            };
+              };
     
             const savedGains = localStorage.getItem('gains');
             const savedExpenses = localStorage.getItem('expenses');

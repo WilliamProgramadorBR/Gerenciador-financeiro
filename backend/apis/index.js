@@ -40,42 +40,91 @@ router.post('/api/register', async (req, res) => {
 });
 
 // Ganhos
-router.get('/api/ganhos', async (req, res) => {
+router.get('/api/transactions', async (req, res) => {//ajustada
   try {
     const db = await setupDatabase();
-    const ganhos = await db.all('SELECT * FROM ganhos');
+    
+    // Recuperar o id_user da query string
+    const { id_user } = req.query;
+    
+    if (!id_user) {
+      return res.status(400).send('Parâmetro id_user é obrigatório');
+    }
+    
+    // Validar se id_user é um número
+    if (isNaN(Number(id_user))) {
+      return res.status(400).send('id_user deve ser um número válido');
+    }
+    
+    // Consultar ganhos baseado no id_user
+    const ganhos = await db.all('SELECT * FROM transactions WHERE user_id = ?', [id_user]);
+    
     res.json(ganhos);
   } catch (err) {
+    console.error(err); // Adicione um log para rastrear o erro
     res.status(500).send('Erro ao buscar os ganhos');
   }
 });
 
-router.post('/api/ganhos', async (req, res) => {
-  const { description, amount, type, frequency, date } = req.body;
+
+
+router.post('/api/transactions', async (req, res) => {//ajustada
+  const { description, amount, type, frequency, date, id_user } = req.body;
   try {
     const db = await setupDatabase();
-    await db.run('INSERT INTO ganhos (description, amount, type, frequency, date) VALUES (?, ?, ?, ?, ?)', [description, amount, type, frequency, date]);
+    await db.run('INSERT INTO transactions (description, amount, type, frequency, date, user_id) VALUES (?, ?, ?, ?, ?, ?)', [description, amount, type, frequency, date, id_user]);
     res.status(201).send('Ganho adicionado com sucesso!');
   } catch (err) {
     res.status(500).send('Erro ao adicionar o ganho');
   }
 });
 
-// Gastos
-router.get('/api/gastos', async (req, res) => {
+
+
+router.put('/api/transactions/:id', async (req, res) => {//ajustado
+  const { id } = req.params;
+  const { description, amount, type, frequency, date } = req.body;
   try {
     const db = await setupDatabase();
-    const gastos = await db.all('SELECT * FROM gastos');
-    res.json(gastos);
+    await db.run('UPDATE transactions SET description = ?, amount = ?, type = ?, frequency = ?, date = ? WHERE id = ?', [description, amount, type, frequency, date, id]);
+    res.status(200).send('Ganho atualizado com sucesso!');
   } catch (err) {
-    res.status(500).send('Erro ao buscar os gastos');
+    res.status(500).send('Erro ao atualizar o ganho');
   }
 });
+
+// Atualizar gastos
+router.put('/api/gastos/:id', async (req, res) => {//ajustado
+  const { id } = req.params;
+  const { description, amount, type, frequency, date } = req.body;
+  try {
+    const db = await setupDatabase();
+    await db.run('UPDATE transactions SET description = ?, amount = ?, type = ?, frequency = ?, date = ? WHERE id = ?', [description, amount, type, frequency, date, id]);
+    res.status(200).send('Despesa atualizada com sucesso!');
+  } catch (err) {
+    res.status(500).send('Erro ao atualizar a despesa');
+  }
+});
+
+// Deletar ganhos
+router.delete('/api/transactions/:id', async (req, res) => {//ajustado
+  const { id } = req.params;
+  try {
+    const db = await setupDatabase();
+    await db.run('DELETE FROM transactions WHERE id = ?', [id]);
+    res.status(200).send('Ganho excluído com sucesso!');
+  } catch (err) {
+    res.status(500).send('Erro ao excluir o ganho');
+  }
+});
+
+
+
 router.get('/api/report', async (req, res) => {
     try {
       // Obter todos os registros da tabela
       const db = await setupDatabase();
-      const records = await db.all('SELECT * FROM ganhos');
+      const records = await db.all('SELECT * FROM transactions');
     
       // Separar ganhos e gastos
       const ganhos = records.filter(record => record.type === 'entrada');
@@ -98,7 +147,7 @@ router.get('/api/report', async (req, res) => {
     try {
       // Obter todos os registros da tabela
       const db = await setupDatabase();
-      const records = await db.all('SELECT * FROM ganhos');
+      const records = await db.all('SELECT * FROM transactions');
     
       // Separar ganhos e gastos
       const ganhos = records.filter(record => record.type === 'entrada');
@@ -111,66 +160,10 @@ router.get('/api/report', async (req, res) => {
       res.status(500).send('Erro ao buscar os dados do relatório');
     }
   }); // Api responsável por analisar as informações geral do usuário de forma anual
-router.post('/api/gastos', async (req, res) => {
-  const { description, amount, type, frequency, date } = req.body;
-  try {
-    const db = await setupDatabase();
-    await db.run('INSERT INTO gastos (description, amount, type, frequency, date) VALUES (?, ?, ?, ?, ?)', [description, amount, type, frequency, date]);
-    res.status(201).send('Despesa adicionada com sucesso!');
-  } catch (err) {
-    res.status(500).send('Erro ao adicionar a despesa');
-  }
-});
+
 
 // Atualizar ganhos
-router.put('/api/ganhos/:id', async (req, res) => {
-  const { id } = req.params;
-  const { description, amount, type, frequency, date } = req.body;
-  try {
-    const db = await setupDatabase();
-    await db.run('UPDATE ganhos SET description = ?, amount = ?, type = ?, frequency = ?, date = ? WHERE id = ?', [description, amount, type, frequency, date, id]);
-    res.status(200).send('Ganho atualizado com sucesso!');
-  } catch (err) {
-    res.status(500).send('Erro ao atualizar o ganho');
-  }
-});
 
-// Atualizar gastos
-router.put('/api/gastos/:id', async (req, res) => {
-  const { id } = req.params;
-  const { description, amount, type, frequency, date } = req.body;
-  try {
-    const db = await setupDatabase();
-    await db.run('UPDATE gastos SET description = ?, amount = ?, type = ?, frequency = ?, date = ? WHERE id = ?', [description, amount, type, frequency, date, id]);
-    res.status(200).send('Despesa atualizada com sucesso!');
-  } catch (err) {
-    res.status(500).send('Erro ao atualizar a despesa');
-  }
-});
-
-// Deletar ganhos
-router.delete('/api/ganhos/:id', async (req, res) => {
-  const { id } = req.params;
-  try {
-    const db = await setupDatabase();
-    await db.run('DELETE FROM ganhos WHERE id = ?', [id]);
-    res.status(200).send('Ganho excluído com sucesso!');
-  } catch (err) {
-    res.status(500).send('Erro ao excluir o ganho');
-  }
-});
-
-// Deletar gastos
-router.delete('/api/gastos/:id', async (req, res) => {
-  const { id } = req.params;
-  try {
-    const db = await setupDatabase();
-    await db.run('DELETE FROM gastos WHERE id = ?', [id]);
-    res.status(200).send('Despesa excluída com sucesso!');
-  } catch (err) {
-    res.status(500).send('Erro ao excluir a despesa');
-  }
-});
 
 // Relatório
 

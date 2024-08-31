@@ -1,5 +1,5 @@
 // src/components/FormPage.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Container,
     Title,
@@ -13,25 +13,51 @@ import {
 } from './styles';
 import { NumericFormat } from 'react-number-format'; // Importando o NumericFormat
 import Alert from '../../components/Alert'; // Importando o componente Alert
-
+import { map } from 'mathjs';
 interface FormData {
     description: string;
     amount: number;
     type: 'entrada' | 'saída';
     frequency: 'recorrente' | 'eventual';
     date: string;
+    id_user: number;
 }
 
 const FormPage: React.FC = () => {
+    const [user, setUser] = useState<{ id: number } | null>(null); // Estado para armazenar o usuário
     const [formData, setFormData] = useState<FormData>({
         description: '',
         amount: 0,
         type: 'entrada',
         frequency: 'recorrente',
-        date: ''
+        date: '',
+        id_user: 0 // Inicialmente 0 ou algum valor padrão
     });
     const [error, setError] = useState<string | null>(null);
     const [showSuccessAlert, setShowSuccessAlert] = useState(false); // Estado para mostrar alerta de sucesso
+
+    useEffect(() => {
+        // Recuperar o item do localStorage
+        const userJson = localStorage.getItem('@minha-carteira:user');
+
+        if (userJson) {
+            // Converter a string JSON para um objeto
+            const parsedUser = JSON.parse(userJson);
+            
+            // Verificar se o resultado é um objeto
+            if (typeof parsedUser === 'object' && parsedUser !== null) {
+                setUser(parsedUser);
+                setFormData(prevState => ({
+                    ...prevState,
+                    id_user: parsedUser.id // Atualizar id_user com o id do usuário
+                }));
+            } else {
+                console.log('O item no localStorage não é um objeto.');
+            }
+        } else {
+            console.log('Item não encontrado no localStorage.');
+        }
+    }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -44,7 +70,7 @@ const FormPage: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const response = await fetch('http://localhost:3008/api/ganhos', {
+            const response = await fetch('http://localhost:3008/api/transactions', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -61,13 +87,13 @@ const FormPage: React.FC = () => {
                 amount: 0,
                 type: 'entrada',
                 frequency: 'recorrente',
-                date: ''
+                date: '',
+                id_user: user ? user.id : 0 // Manter o id_user após o envio
             });
         } catch (error) {
             setError('Error submitting data. Please try again.');
         }
     };
-
     return (
         <Container>
             <Title>Inserção de dados no finanças</Title>
