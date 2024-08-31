@@ -120,46 +120,79 @@ router.delete('/api/transactions/:id', async (req, res) => {//ajustado
 
 
 
-router.get('/api/report', async (req, res) => {
-    try {
-      // Obter todos os registros da tabela
-      const db = await setupDatabase();
-      const records = await db.all('SELECT * FROM transactions');
-    
-      // Separar ganhos e gastos
-      const ganhos = records.filter(record => record.type === 'entrada');
-      const gastos = records.filter(record => record.type === 'saída');
-    
-      // Encontrar o gasto com o maior impacto
-      const highestExpense = gastos.reduce((max, expense) => expense.amount > max.amount ? expense : max, { amount: 0 });
-    
-      // Calcular percentuais e gerar relatórios
-      const result = calculatePercentages(ganhos, gastos, highestExpense);
-      
-      // Enviar o resultado como resposta
-      res.json(result);
-    } catch (err) {
-      console.error('Erro ao buscar os dados do relatório:', err);
-      res.status(500).send('Erro ao buscar os dados do relatório');
+router.get('/api/report', async (req, res) => {//ajustado
+  try {
+    // Obter o id_user da query string
+    const { id_user } = req.query;
+
+    // Verificar se id_user foi fornecido
+    if (!id_user) {
+      return res.status(400).send('ID do usuário é necessário');
     }
-  });
-  router.get('/api/prevision', async (req, res) => {
-    try {
-      // Obter todos os registros da tabela
-      const db = await setupDatabase();
-      const records = await db.all('SELECT * FROM transactions');
-    
-      // Separar ganhos e gastos
-      const ganhos = records.filter(record => record.type === 'entrada');
-      const gastos = records.filter(record => record.type === 'saída');
-    const relatorio = analyzeFinancialTrendsIA(ganhos, gastos)
-  
-      res.json(relatorio);
-    } catch (err) {
-      console.error('Erro ao buscar os dados do relatório:', err);
-      res.status(500).send('Erro ao buscar os dados do relatório');
+
+    // Verificar se id_user é um número
+    if (isNaN(Number(id_user))) {
+      return res.status(400).send('ID do usuário inválido');
     }
-  }); // Api responsável por analisar as informações geral do usuário de forma anual
+
+    const db = await setupDatabase();
+
+    // Obter todos os registros da tabela filtrados pelo id_user
+    const records = await db.all('SELECT * FROM transactions WHERE user_id = ?', [id_user]);
+
+    // Separar ganhos e gastos
+    const ganhos = records.filter(record => record.type === 'entrada');
+    const gastos = records.filter(record => record.type === 'saída');
+
+    // Encontrar o gasto com o maior impacto
+    const highestExpense = gastos.reduce((max, expense) => expense.amount > max.amount ? expense : max, { amount: 0 });
+
+    // Calcular percentuais e gerar relatórios
+    const result = calculatePercentages(ganhos, gastos, highestExpense);
+
+    // Enviar o resultado como resposta
+    res.json(result);
+  } catch (err) {
+    console.error('Erro ao buscar os dados do relatório:', err);
+    res.status(500).send('Erro ao buscar os dados do relatório');
+  }
+});
+
+router.get('/api/prevision', async (req, res) => {//ajustado
+  try {
+    // Obter o id_user da query string
+    const { id_user } = req.query;
+
+    // Verificar se id_user foi fornecido
+    if (!id_user) {
+      return res.status(400).send('ID do usuário é necessário');
+    }
+
+    // Verificar se id_user é um número
+    if (isNaN(Number(id_user))) {
+      return res.status(400).send('ID do usuário inválido');
+    }
+
+    const db = await setupDatabase();
+
+    // Obter todos os registros da tabela filtrados pelo id_user
+    const records = await db.all('SELECT * FROM transactions WHERE user_id = ?', [id_user]);
+
+    // Separar ganhos e gastos
+    const ganhos = records.filter(record => record.type === 'entrada');
+    const gastos = records.filter(record => record.type === 'saída');
+
+    // Analisar tendências financeiras com IA
+    const relatorio = analyzeFinancialTrendsIA(ganhos, gastos);
+
+    // Enviar o relatório como resposta
+    res.json(relatorio);
+  } catch (err) {
+    console.error('Erro ao buscar os dados do relatório:', err);
+    res.status(500).send('Erro ao buscar os dados do relatório');
+  }
+});
+ // Api responsável por analisar as informações geral do usuário de forma anual
 
 
 // Atualizar ganhos

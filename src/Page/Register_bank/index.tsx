@@ -4,6 +4,7 @@ import { fetchTransactions } from '../../repositories/api'; // Atualize o caminh
 import { Transaction } from '../../repositories/types'; // Ajuste o caminho conforme necessário
 import { Container, Title, Button, FormGroup, Label, Input, Select, CardText, TitleText, TransactionCard } from './styles'; // Atualize o caminho conforme necessário
 import CustomModal from '../../components/Custom_modal'; // Importe o componente de modal
+import months from '../../utils/months';
 
 const TransactionsPage: React.FC = () => {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -18,7 +19,7 @@ const TransactionsPage: React.FC = () => {
 
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedYear, setSelectedYear] = useState<number | 'todos'>('todos');
-    const [selectedMonth, setSelectedMonth] = useState<number | 'todos'>('todos');
+    const [selectedMonth, setSelectedMonth] = useState<string | number>('todos');
 
     const [years, setYears] = useState<number[]>([]);
 
@@ -129,17 +130,17 @@ const TransactionsPage: React.FC = () => {
             </FormGroup>
 
             <FormGroup>
-                <Label><CardText>Mês</CardText></Label>
-                <Select
-                    value={selectedMonth}
-                    onChange={e => setSelectedMonth(Number(e.target.value) || 'todos')}
-                >
-                    <option value="todos">Todos</option>
-                    {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
-                        <option key={month} value={month}>{month}</option>
-                    ))}
-                </Select>
-            </FormGroup>
+            <Label><CardText>Mês</CardText></Label>
+            <Select
+                value={selectedMonth}
+                onChange={e => setSelectedMonth(Number(e.target.value) || 'todos')}
+            >
+                <option value="todos">Todos</option>
+                {months.map((month, index) => (
+                    <option key={index + 1} value={index + 1}>{month}</option>
+                ))}
+            </Select>
+        </FormGroup>
 
             {filteredTransactions.map(transaction => (
                 <TransactionCard key={transaction.id}>

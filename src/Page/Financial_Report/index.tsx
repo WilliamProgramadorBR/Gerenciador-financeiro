@@ -37,28 +37,38 @@ const FinancialReport: React.FC = () => {
   const [alert, setAlert] = useState<{ message: string; type: 'success' | 'error' | 'info'; } | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [modalContent, setModalContent] = useState<string>('');
-
+  const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     async function fetchReport() {
       try {
-        const response = await axios.get<FinancialReportData>('http://localhost:3008/api/report');
-        setReport(response.data);
-      } catch (error) {
-        console.error('Erro ao buscar o relatório', error);
-      }
-    }
+        // Recuperar o id_user do localStorage
+        const userJson = localStorage.getItem('@minha-carteira:user');
+        if (!userJson) {
+          throw new Error('Usuário não encontrado no localStorage');
+        }
 
-    async function fetchAdditionalReport() {
-      try {
-        const response = await axios.get<IA>('http://localhost:3008/api/prevision');
-        setIAReport(response.data);
+        const user = JSON.parse(userJson);
+        if (typeof user !== 'object' || user === null || !user.id) {
+          throw new Error('Dados do usuário inválidos');
+        }
+
+        const id_user = user.id;
+
+        // Fazer a requisição para o relatório financeiro com o id_user
+        const reportResponse = await axios.get<FinancialReportData>(`http://localhost:3008/api/report?id_user=${id_user}`);
+        setReport(reportResponse.data);
+
+        // Fazer a requisição para o relatório adicional com o id_user
+        const iaResponse = await axios.get<IA>(`http://localhost:3008/api/prevision?id_user=${id_user}`);
+        setIAReport(iaResponse.data);
+
       } catch (error) {
-        console.error('Erro ao buscar o relatório adicional', error);
+        console.error('Erro ao buscar os relatórios', error);
+        setError('Erro ao buscar os relatórios');
       }
     }
 
     fetchReport();
-    fetchAdditionalReport();
   }, []);
 
   const isReportEmpty = (report: FinancialReportData | null) => {
