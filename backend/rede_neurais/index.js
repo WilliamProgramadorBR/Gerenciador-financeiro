@@ -50,7 +50,7 @@ function predictFutureTrend(groupedData) {
   const months = Object.keys(groupedData);
   console.log(`Meses disponíveis para previsão: ${months.length}`);
 
-  if (months.length < 4) {
+  if (months.length < 6) {
     return 'Dados insuficientes para previsão. É necessário ter pelo menos 4 meses de dados.';
   }
 
@@ -65,7 +65,7 @@ function predictFutureTrend(groupedData) {
 
   console.log(`Totais após remoção de outliers: ${filteredTotals}`);
 
-  if (filteredTotals.length < 4) {
+  if (filteredTotals.length < 6) {
     return 'Dados insuficientes para previsão após remoção de outliers.';
   }
 
@@ -126,12 +126,12 @@ function formatCurrency(value) {
 // Função para análise de tendências
 function analyzeTrends(trendData, totalCurrent, averageMonthly, type) {
   if (typeof trendData === 'string') {
-    return `Relatório gerado por IA: Não há dados suficientes para prever a tendência de ${type}.`;
+    return `Relatório gerado por IA: Não há dados suficientes para prever a tendência de ${type} no momento. Para que a IA possa realizar uma análise adequada e fornecer previsões precisas, é necessário ter pelo menos 7 meses de dados. Por favor, continue monitorando suas informações financeiras e aguarde o período mínimo para uma análise mais completa.`;
   }
 
   const { lastMonthTotal, futurePrediction } = trendData;
   if (isNaN(lastMonthTotal) || isNaN(futurePrediction)) {
-    return `Relatório gerado por IA: Dados insuficientes ou inválidos para calcular a previsão de ${type}.`;
+    return `Relatório gerado por IA: Não há dados suficientes para prever a tendência de ${type} no momento. Para que a IA possa realizar uma análise adequada e fornecer previsões precisas, é necessário ter pelo menos 7 meses de dados. Por favor, continue monitorando suas informações financeiras e aguarde o período mínimo para uma análise mais completa.`;
   }
 
   let message = '';
