@@ -86,7 +86,7 @@
     ],
     "win": {
       "target": "nsis",
-      "icon": "imgelectron/image_K12_icon.ico"
+      "icon": "imgelectron/app.ico"
     },
     "nsis": {
       "oneClick": false,

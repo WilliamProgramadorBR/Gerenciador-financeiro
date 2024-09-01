@@ -27,8 +27,10 @@ interface FinancialReportData {
 }
 
 interface IA {
-  gainMessage: string;
-  expenseMessage: string;
+  entrada_eventual: string;
+  entrada_recorrente: string;
+  saída_eventual: string; 
+  saída_recorrente: string;
 }
 
 const FinancialReport: React.FC = () => {
@@ -131,7 +133,15 @@ const FinancialReport: React.FC = () => {
     setShowModal(false);
     setModalContent('');
   };
-
+  const mensagem = `
+  Relatório da IA: Dados Insuficientes para Geração de Relatório
+  
+  Para gerar um relatório detalhado e preciso, é necessário ter pelo menos 7 meses de dados financeiros completos. Com um período menor, a previsão pode não ser confiável e não refletir com precisão as tendências reais.
+  
+  Certifique-se de inserir dados suficientes e consistentes para permitir que a IA faça análises mais assertivas. Dados insuficientes podem resultar em previsões imprecisas e menos úteis para suas necessidades financeiras.
+  
+  Por favor, continue monitorando suas informações financeiras e aguarde até que haja dados suficientes para uma análise mais completa.
+  `;
   if (!report || !IAReport) return <Loader />;
 
   if (isReportEmpty(report)) {
@@ -218,13 +228,22 @@ const FinancialReport: React.FC = () => {
             <Section>
               <SectionTitle>Previsão de Ganhos e Gastos</SectionTitle>
               <Card>
-                <CardTitle>Ganhos Previsões</CardTitle>
-                <Text>{IAReport.gainMessage || 'Nenhum dado'}</Text>
+                <CardTitle>Ganhos eventuais: Previsões</CardTitle>
+                <Text>{IAReport.entrada_eventual || mensagem}</Text>
               </Card>
               <Card>
-                <CardTitle>Gastos Previsões</CardTitle>
-                <Text>{IAReport.expenseMessage || 'Nenhum dado'}</Text>
+                <CardTitle>Ganhos recorrentes: Previsões</CardTitle>
+                <Text>{IAReport.entrada_recorrente || mensagem}</Text>
               </Card>
+              <Card>
+                <CardTitle>Gastos recorrentes: Previsões</CardTitle>
+                <Text>{IAReport.saída_recorrente || mensagem}</Text>
+              </Card>
+              <Card>
+                <CardTitle>Gastos eventuais: Previsões</CardTitle>
+                <Text>{IAReport.saída_eventual || mensagem}</Text>
+              </Card>
+              
             </Section>
           </>
         ) : (
