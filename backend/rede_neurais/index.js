@@ -20,21 +20,24 @@ function detectOutliers(data) {
   return data.filter(value => value >= lowerBound && value <= upperBound);
 }
 
-// Função para realizar regressão múltipla usando o método dos mínimos quadrados
-function multipleRegression(X, Y) {
+// Função para realizar regressão linear simples
+function linearRegression(X, Y) {
   const n = X.length;
-  const p = X[0].length;
+  const xMean = X.reduce((sum, value) => sum + value, 0) / n;
+  const yMean = Y.reduce((sum, value) => sum + value, 0) / n;
 
-  // Adiciona uma coluna de 1s para o termo constante
-  const X_augmented = X.map(row => [1, ...row]);
+  const numerator = X.reduce((sum, xi, i) => sum + (xi - xMean) * (Y[i] - yMean), 0);
+  const denominator = X.reduce((sum, xi) => sum + Math.pow(xi - xMean, 2), 0);
 
-  const X_transpose = math.transpose(X_augmented);
-  const XtX = math.multiply(X_transpose, X_augmented);
-  const XtY = math.multiply(X_transpose, Y);
+  const slope = numerator / denominator;
+  const intercept = yMean - slope * xMean;
 
-  // Resolução do sistema de equações XtX * coeffs = XtY
-  const coeffs = math.lusolve(XtX, XtY);
-  return coeffs;
+  return { slope, intercept };
+}
+
+// Função para prever o próximo valor com base no modelo de regressão linear
+function predictLinearRegression(model, x) {
+  return model.slope * x + model.intercept;
 }
 
 // Função para preparar dados agrupados por mês
@@ -43,6 +46,16 @@ function prepareMonthlyData(data) {
   return Object.keys(groupedData).map(month =>
     groupedData[month].reduce((sum, item) => sum + item.amount, 0)
   );
+}
+
+// Função para agrupar dados por mês
+function groupByMonth(data) {
+  return data.reduce((acc, item) => {
+    const month = new Date(item.date).toISOString().slice(0, 7); // 'YYYY-MM'
+    acc[month] = acc[month] || [];
+    acc[month].push(item);
+    return acc;
+  }, {});
 }
 
 // Função para prever tendências futuras
@@ -58,14 +71,14 @@ function predictFutureTrend(totals) {
   }
 
   // Criar variáveis independentes e dependentes
-  const X = filteredTotals.map((_, i) => [i + 1]); // Variável independente (tempo)
+  const X = filteredTotals.map((_, i) => i + 1); // Variável independente (tempo)
   const Y = filteredTotals; // Variável dependente (totais)
 
-  // Realizar a regressão múltipla
-  const coefficients = multipleRegression(X, Y);
-  
+  // Realizar a regressão linear
+  const model = linearRegression(X, Y);
+
   const nextMonthIndex = filteredTotals.length + 1;
-  const futurePrediction = coefficients[0][0] + coefficients.slice(1).reduce((sum, coef, index) => sum + coef[0] * Math.pow(nextMonthIndex, index + 1), 0);
+  const futurePrediction = predictLinearRegression(model, nextMonthIndex);
 
   console.log(`Previsão para o próximo mês: ${futurePrediction}`);
 
@@ -73,16 +86,6 @@ function predictFutureTrend(totals) {
     lastMonthTotal: filteredTotals[filteredTotals.length - 1],
     futurePrediction,
   };
-}
-
-// Função para agrupar dados por mês
-function groupByMonth(data) {
-  return data.reduce((acc, item) => {
-    const month = new Date(item.date).toISOString().slice(0, 7); // 'YYYY-MM'
-    acc[month] = acc[month] || [];
-    acc[month].push(item);
-    return acc;
-  }, {});
 }
 
 // Função para filtrar dados com base em type e frequency
