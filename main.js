@@ -6,6 +6,7 @@ const { exec } = require('child_process');
 const http = require('http');
 
 
+
 const setupDatabase = require('./backend/conexao_db');
 const routes = require('./backend/apis');
 let mainWindow;

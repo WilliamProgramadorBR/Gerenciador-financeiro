@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const nodemailer = require('nodemailer');
+const fs = require('fs');
+const path = require('path');
+const fileUpload = require('express-fileupload');
 const  setupDatabase  = require('../conexao_db/index');
 const { calculatePercentages } = require('../algoritmos/index');
 const {analyzeFinancialTrendsIA} = require('../rede_neurais') // Importe a função que configura o banco de dados
@@ -289,4 +292,75 @@ router.post('/api/send-report', async (req, res) => {
   }
 });
 
+
+const uploadDirectory = path.join(__dirname, 'uploads'); // Defina o diretório de upload
+
+// Middleware para upload de arquivos
+router.use(fileUpload());
+
+// Rota para upload da imagem de perfil
+router.post('/api/upload-profile-picture', async (req, res) => {
+  const userId = req.query.userId; // Obtém o ID do usuário a partir dos parâmetros da query
+  console.log('User ID:', userId); // Log do ID do usuário para debug
+
+  // Verifica se há um arquivo na requisição
+  if (!req.files || !req.files.profile_picture) {
+    return res.status(400).send('Nenhum arquivo foi enviado.');
+  }
+
+  const profilePicture = req.files.profile_picture;
+  if (!Array.isArray(profilePicture)) {
+    const extension = path.extname(profilePicture.name); // Obtém a extensão do arquivo
+    const fileName = `${userId}-${Date.now()}${extension}`; // Nome único baseado no ID do usuário e no timestamp
+    const filePath = path.join(uploadDirectory, fileName);
+
+    // Move o arquivo para o diretório de destino
+    profilePicture.mv(filePath, async (err) => {
+      if (err) {
+        console.error('Erro ao mover o arquivo:', err);
+        return res.status(500).send('Erro ao salvar o arquivo.');
+      }
+
+      try {
+        // Atualiza o caminho da imagem no banco de dados
+        const db = await setupDatabase();
+        await db.run('UPDATE users SET profile_picture = ? WHERE id = ?', [filePath, userId]);
+        
+        res.json({ filePath });
+      } catch (error) {
+        console.error('Erro ao atualizar o banco de dados:', error);
+        res.status(500).send('Erro ao atualizar o banco de dados.');
+      }
+    });
+  } else {
+    res.status(400).send('Erro no upload do arquivo.');
+  }
+});
+
+router.get('/api/get-profile-picture', async (req, res) => {
+  const { userId } = req.query;
+
+  if (!userId) {
+    return res.status(400).send('ID do usuário não fornecido.');
+  }
+
+  try {
+    const db = await setupDatabase();
+    const user = await db.get('SELECT profile_picture FROM users WHERE id = ?', [userId]);
+
+    if (user && user.profile_picture) {
+      const filePath = path.resolve(user.profile_picture);
+      if (fs.existsSync(filePath)) {
+        res.sendFile(filePath);
+      } else {
+        res.status(404).send('Imagem do perfil não encontrada.');
+      }
+    } else {
+      res.status(404).send('Imagem do perfil não encontrada.');
+    }
+  } catch (error) {
+    console.error('Erro ao buscar a imagem do perfil:', error);
+    res.status(500).send('Erro ao buscar a imagem do perfil.');
+  }
+});
 module.exports = router;

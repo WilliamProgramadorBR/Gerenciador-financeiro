@@ -11,6 +11,7 @@ import SignUp from '../Page/SignUp';
 import FinancialReport from '../Page/Financial_Report';
 import EmailSettings from '../Page/Notifications';
 import News from '../Page/News';
+import Profile from '../Page/Profile';
 
 const ProtectedRoute: React.FC<{ element: React.ReactElement }> = ({ element }) => {
   const { logged } = useAuth();
@@ -28,6 +29,7 @@ const AppRoutes: React.FC = () => (
     <Route path="/report" element={<ProtectedRoute element={<Layout><FinancialReport /></Layout>} />} />
     <Route path="/settings" element={<ProtectedRoute element={<Layout><EmailSettings/></Layout>} />} />
     <Route path="/noticias" element={<ProtectedRoute element={<Layout><News/></Layout>} />} />
+    <Route path="/profile" element={<ProtectedRoute element={<Layout><Profile/></Layout>} />} />
     <Route path="*" element={<h1>Page Not Found</h1>} /> {/* Fallback para rotas não definidas */}
   </Routes>
 );

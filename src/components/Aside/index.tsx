@@ -14,7 +14,8 @@ import {
     MdEdit,
     MdAssessment,
     MdSettings,
-    MdAnnouncement
+    MdAnnouncement,
+    MdPerson // Ícone de perfil adicionado
 } from 'react-icons/md';
 
 import logoImg from '../../assets/logo.svg';
@@ -52,7 +53,6 @@ const Aside: React.FC = () => {
 
     return (
         <Container menuIsOpen={toggleMenuIsOpened}>
-             
             <Header>
                 <ToggleMenu onClick={handleToggleMenu}>
                     { toggleMenuIsOpened ? <MdClose /> : <MdMenu /> }
@@ -100,13 +100,17 @@ const Aside: React.FC = () => {
                     Configurações
                 </MenuItemLink>
 
+                {/* Novo item de menu para a rota Perfil */}
+                <MenuItemLink as={Link} to="/profile" aria-label="Perfil">
+                    <MdPerson />
+                    Perfil
+                </MenuItemLink>
+
                 <MenuItemButton onClick={signOut}>
                     <MdExitToApp />
                     Sair
                 </MenuItemButton>
             </MenuContainer>
-
-            
 
             <ThemeToggleFooter menuIsOpen={toggleMenuIsOpened}>
                 <Toggle
@@ -116,9 +120,7 @@ const Aside: React.FC = () => {
                     onChange={handleChangeTheme}
                 />
             </ThemeToggleFooter>
-           
         </Container>
-      
     );
 }
 
