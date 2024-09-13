@@ -19,7 +19,7 @@ const Profile: React.FC = () => {
     username: '',
     email: '',
     password: '',
-    name: '',
+    
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -87,18 +87,26 @@ const Profile: React.FC = () => {
   };
 
   const handleSaveChanges = async () => {
+    const user = JSON.parse(localStorage.getItem('@minha-carteira:user') || '{}');
+    const userId = user.id; // Obtém o ID do usuário do localStorage
+  
+    if (!userId) {
+      console.error('ID do usuário não encontrado');
+      return;
+    }
+  
     try {
       const response = await fetch('http://localhost:3008/api/update-profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, id: userId }), // Inclui o ID do usuário
       });
-
+  
       if (response.ok) {
-        const user = await response.json();
-        localStorage.setItem('@minha-carteira:user', JSON.stringify(user));
+        const updatedUser = await response.json();
+        localStorage.setItem('@minha-carteira:user', JSON.stringify(updatedUser));
       } else {
         console.error('Erro ao atualizar o perfil');
       }
@@ -106,6 +114,7 @@ const Profile: React.FC = () => {
       console.error('Erro:', error);
     }
   };
+  
 
   const handleImageClick = () => {
     if (fileInputRef.current) {
@@ -120,7 +129,7 @@ const Profile: React.FC = () => {
       username: user.username || '',
       email: user.email || '',
       password: user.password || '',
-      name: user.name || '',
+     
     });
   };
 
@@ -182,16 +191,8 @@ const Profile: React.FC = () => {
       )}
 
       <form>
-        <FormGroup>
-          <Label htmlFor="name">Name</Label>
-          <Input
-            id="name"
-            name="name"
-            type="text"
-            value={formData.name}
-            onChange={handleInputChange}
-          />
-        </FormGroup>
+      
+       
         <FormGroup>
           <Label htmlFor="username">Username</Label>
           <Input

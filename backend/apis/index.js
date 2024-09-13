@@ -363,4 +363,30 @@ router.get('/api/get-profile-picture', async (req, res) => {
     res.status(500).send('Erro ao buscar a imagem do perfil.');
   }
 });
+router.put('/api/update-profile', async (req, res) => {
+  const { id, username, email, password} = req.body;
+
+  if (!id) {
+    return res.status(400).send('ID do usuário não fornecido.');
+  }
+
+  try {
+    const db = await setupDatabase();
+    const result = await db.run(
+      'UPDATE users SET username = ?, email = ?, password = ? WHERE id = ?',
+      [username, email, password,  id]
+    );
+
+    if (result.changes > 0) {
+      // Retorna os dados atualizados do usuário para confirmar as mudanças
+      const updatedUser = await db.get('SELECT * FROM users WHERE id = ?', [id]);
+      res.json(updatedUser);
+    } else {
+      res.status(404).send('Usuário não encontrado.');
+    }
+  } catch (error) {
+    console.error('Erro ao atualizar o perfil do usuário:', error);
+    res.status(500).send('Erro ao atualizar o perfil do usuário.');
+  }
+});
 module.exports = router;
